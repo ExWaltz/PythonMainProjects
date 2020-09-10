@@ -1,6 +1,6 @@
 # Python Main Projects
 <hr>
-### Project list
+## Project list
 - [ ] Quizlet app
 - [ ] TODO app
 - [ ] Note app
