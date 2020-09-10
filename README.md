@@ -1,5 +1,4 @@
 # Python Main Projects
-<br>
 ### Project List
 - [ ] Quizlet app
 - [ ] TODO app
