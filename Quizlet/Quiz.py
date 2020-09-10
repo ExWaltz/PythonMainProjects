@@ -9,18 +9,20 @@ import random
 
 
 class PythonQuiz:
-    def QuizBook(self, bookname, question=None, choices=[], answer=None, mode=2, qrandom=False, recordTime=True):
+    def QuizBook(self, bookname, question=None, choices=[], answer=0, mode=2, qrandom=False, recordTime=True):
         """ bookname:   # Required
                 * Enter existing or new Quiz Book name
             question:   # Optional
                 * Question of Quizlet
             choices:    # Optional
                 * Answers to question
+            answer:     # Optional
+                * Choice Index
             mode:       # Optional
                 * 1: True or False quizlet
                 * 2: Multiple Choice quizlet
                 * 3: Input quizlet
-            random:     # Optional
+            qrandom:     # Optional
                 * Randomized Quizlet order every load and Reset
             recordTime: # Optional
                 * True: Record time to answer in each Quizlet
@@ -29,15 +31,15 @@ class PythonQuiz:
         try:
             qbStaus = self._checkQuizBook(bookname)
             if mode == 1:
-                fchoices = [True, False]
-                fchoices = json.dumps(fchoices)
+                choices = [True, False]
             if qbStaus:
                 jsnFile = open(f"{bookname}.quiz", 'w', encoding="utf-8")
                 self.AddQuizToList(os.path.realpath(jsnFile.name))
                 if question is None:
                     data = f'{{"{bookname}":[{{"random": {random}, "recordTime": {recordTime}}}]}}'
                 else:
-                    data = f'{{"{bookname}": [{{"{question}": [{{"choices": {choices}, "answer": {answer}, "mode": {mode}, "time": null}}], "random": {random}, "recordTime": {recordTime}}}]}}'
+                    data = f'{{"{bookname}": [{{"{question}": [{{"choices": {json.dumps(choices)}, "answer": {json.dumps(choices[answer])}, "mode": {mode}, "time": null}}], "random": {json.dumps(qrandom)}, "recordTime": {json.dumps(recordTime)}}}]}}'
+                print(data)
                 jsnLoad = json.loads(data)
                 json.dump(jsnLoad, jsnFile, indent=2)
                 jsnFile.close()
@@ -47,12 +49,24 @@ class PythonQuiz:
         except Exception as e:
             raise e("TypeError: Invalid Type")
 
-    def _updateQuizBook(self, ubookname, uquestion, uchoices=[], uanswer=None, umode=2):
+    def QuizBookOptions(self, bookname, qrandom=False, recordTime=True):
+        jsnFile = open(f"{bookname}.quiz", 'r+', encoding="utf-8")
+        data = json.loads(jsnFile.read())
+        data[bookname][0]["random"] = qrandom
+        data[bookname][0]["recordTime"] = recordTime
+        jsnFile.seek(0)
+        json.dump(data, jsnFile, indent=2)
+        jsnFile.truncate()
+        jsnFile.close()
+
+    def _updateQuizBook(self, ubookname, uquestion, uchoices=[], uanswer=0, umode=2):
         jsnFile = open(f"{ubookname}.quiz", 'r+', encoding="utf-8")
         self.AddQuizToList(os.path.realpath(jsnFile.name))
         data = json.loads(jsnFile.read())
         uquestionData = {"choices": uchoices,
-                         "answer": uanswer, "mode": umode, "time": None}
+                         "answer": uchoices[uanswer], "mode": umode, "time": None}
+        if data[str(ubookname)][0].get(str(uquestion)) is None:
+            data[str(ubookname)][0][str(uquestion)] = [uquestionData]
         data[str(ubookname)][0][str(uquestion)][0] = uquestionData
         jsnFile.seek(0)
         json.dump(data, jsnFile, indent=2)
@@ -90,7 +104,7 @@ class PythonQuiz:
             savequizList.truncate()
             savequizList.close()
 
-    def CreateQuizlet(self, quizname, question, choices=[], answer=None, mode=2):
+    def CreateQuizlet(self, quizname, question, choices=[], answer=0, mode=2):
         ''' quizname:   # Required
                 * Enter existing or new Quiz Book name
             question:   # Required
@@ -129,7 +143,7 @@ class PythonQuiz:
         jsnFile.truncate()
         jsnFile.close()
 
-    def StartQuiz(self, bookname):
+    def getQuestions(self, bookname):
         # Get Quiz Book info
         # if recordTime=True
         #   Record Time
@@ -145,15 +159,10 @@ class PythonQuiz:
         isRand = quizBookData.get("random")
         if isRand:
             random.shuffle(quizQuestions)
-        print(bookname)
-        for eQuestion in quizQuestions:
-            print(eQuestion)
-            choices = quizBookData[eQuestion][0]["choices"]
-            answer = quizBookData[eQuestion][0]["answer"]
-            print(choices)
-            print(answer)
+        return quizQuestions
 
 
 quiz = PythonQuiz()
-quiz.CreateQuizlet("Test", "Rushia ch", [42, "sds", 12, 510], "sds")
-quiz.StartQuiz("Test")
+# quiz.QuizBookOptions(bookname="Test", qrandom=True)
+quiz.CreateQuizlet("Test", "Rushia ch", [42, "sfs", 12, 510], 2)
+print(quiz.getQuestions("Test"))

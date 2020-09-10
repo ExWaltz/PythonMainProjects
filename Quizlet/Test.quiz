@@ -1,21 +1,34 @@
 {
   "Test": [
     {
-      "Rushia ch": [
+      "Watame ch": [
         {
           "choices": [
             42,
-            "sds",
+            "sfs",
             12,
             510
           ],
-          "answer": "sds",
+          "answer": 12,
           "mode": 2,
           "time": null
         }
       ],
-      "random": false,
-      "recordTime": true
+      "random": true,
+      "recordTime": true,
+      "Rushia ch": [
+        {
+          "choices": [
+            42,
+            "sfs",
+            12,
+            510
+          ],
+          "answer": 12,
+          "mode": 2,
+          "time": null
+        }
+      ]
     }
   ]
 }
