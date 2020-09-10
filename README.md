@@ -1,6 +1,14 @@
 # Python Main Projects
-- [x] Finish my changes <br>
-- [ ] Push my commits to GitHub <br>
-- [ ] Open a pull request <br>
+<br>
+### Project List
+- [ ] Quizlet app
+- [ ] TODO app
+- [ ] Note app
+- [ ] Recipe app
+- [ ] Movies app
+- [ ] Weather app
+- [ ] Drawing app
+- [ ] Timer/Clock app
+- [ ] Password Generator
 
 Once I finish all the project list I'll move to another programming language
