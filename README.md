@@ -1,4 +1,6 @@
 # Python Main Projects
+Complete 9 Python Projects
+Limits: No External Module
 ### Project List
 - [ ] Quizlet app
 - [ ] TODO app
