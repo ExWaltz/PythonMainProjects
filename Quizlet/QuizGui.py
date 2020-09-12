@@ -1,5 +1,5 @@
 import tkinter as tk
-import Quiz
+from Quiz import PythonQuiz as pq
 from tkinter import ttk
 
 
@@ -9,6 +9,7 @@ class App():
         self.root.title("PyQuiz")
         self.root.geometry("500x600")
         self._main_Frame()
+        self.GetQuizzes()
         self.root.mainloop()
 
     def _main_Frame(self):
@@ -37,6 +38,10 @@ class App():
         hrline = tk.Frame(parent, bg=bg_)
         hrline.pack(fill="x")
         return hrline
+
+    def GetQuizzes(self):
+        quizzes = pq().AllQuizBook[0]
+        print(quizzes)
 
 
 App()
