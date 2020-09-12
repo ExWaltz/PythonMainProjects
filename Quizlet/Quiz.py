@@ -3,13 +3,17 @@
 #       Quiz        #
 #   By: ExWaltz     #
 #####################
+# TODO
+# - [x] Add Quality of life
+# - [ ] Make GUI
 import os
 import json
 import random
+from pathlib import Path
 
 
 class PythonQuiz:
-    def QuizBook(self, bookname, question=None, choices=[], answer=0, mode=0, qrandom=False, recordTime=True):
+    def QuizBook(self, bookname, question=None, choices=[], answer=0, mode=True, qrandom=False, recordTime=True):
         ''' bookname:   # Required
                 * Enter existing or new Quiz Book name
             question:   # Optional
@@ -19,9 +23,8 @@ class PythonQuiz:
             answer:     # Optional
                 * Choice Index
             mode:       # Optional
-                * 0: True or False quizlet
-                * 1: Multiple Choice quizlet
-                * 2: Input quizlet
+                * True: True or False quizlet
+                * False: Multiple Choice quizlet
             qrandom:     # Optional
                 * Randomized Quizlet order every load and Reset
             recordTime: # Optional
@@ -35,10 +38,11 @@ class PythonQuiz:
             fixed_random = json.dumps(qrandom)
             fixed_recordTime = json.dumps(recordTime)
             fixed_choices = json.dumps(choices)
+            fixed_mode = json.dumps(mode)
 
-            if mode == 0:
-                choices = [True, False]
-            elif mode == 1:
+            if mode:
+                choices = [False, True]
+            else:
                 fixed_answer = json.dumps(choices[int(answer)])
 
             if qbStaus:
@@ -47,7 +51,7 @@ class PythonQuiz:
                 if question is None:
                     data = f'{{"{bookname}":[{{"random": {fixed_random}, "recordTime": {fixed_recordTime}}}]}}'
                 else:
-                    data = f'{{"{bookname}": [{{"{question}": [{{"choices": {fixed_choices}, "answer": {fixed_answer}, "mode": {mode}, "time": null}}], "random": {fixed_random}, "recordTime": {fixed_recordTime}}}]}}'
+                    data = f'{{"{bookname}": [{{"{question}": [{{"choices": {fixed_choices}, "answer": {fixed_answer}, "mode": {fixed_mode}, "time": null}}], "random": {fixed_random}, "recordTime": {fixed_recordTime}}}]}}'
                 jsnLoad = json.loads(data)
                 json.dump(jsnLoad, jsnFile, indent=2)
                 jsnFile.close()
@@ -56,9 +60,9 @@ class PythonQuiz:
                                     choices, answer, mode)
 
             # Quizlet options
-            def AddQuizlet(qquestion, qchoice=[], qanswer=0, qmode=0):
-                if qmode == 0:
-                    qchoice = [True, False]
+            def AddQuizlet(qquestion, qchoice=[], qanswer=0, qmode=True):
+                if qmode:
+                    qchoice = [False, True]
                 self.UpdateQuizBook(bookname, qquestion,
                                     qchoice, qanswer, qmode)
 
@@ -68,17 +72,21 @@ class PythonQuiz:
             def GetQuizInfo(qquestion):
                 return self.getQuizletInfo(bookname, qquestion)
 
+            def IsExist(qquestion):
+                return self._verifyQuizlet(bookname, qquestion)
+
             def GetAllQuizInfo():
                 return self.getAllQuizletInfo(bookname)
 
             def GetQuestions():
                 return self.getQuestions(bookname)
 
-            self.QuizBook.__dict__["Add"] = AddQuizlet
-            self.QuizBook.__dict__["Remove"] = RemoveQuizlet
-            self.QuizBook.__dict__["GetQuizInfo"] = GetQuizInfo
-            self.QuizBook.__dict__["GetAllQuizInfo"] = GetAllQuizInfo
-            self.QuizBook.__dict__["GetQuestions"] = GetQuestions
+            self.QuizBook.__dict__["add"] = AddQuizlet
+            self.QuizBook.__dict__["remove"] = RemoveQuizlet
+            self.QuizBook.__dict__["quiz"] = GetQuizInfo
+            self.QuizBook.__dict__["allquiz"] = GetAllQuizInfo
+            self.QuizBook.__dict__["allquestions"] = GetQuestions
+            self.QuizBook.__dict__["exist"] = IsExist
 
             return self.QuizBook
         except Exception as e:
@@ -95,11 +103,9 @@ class PythonQuiz:
         jsnFile.truncate()
         jsnFile.close()
 
-    def UpdateQuizBook(self, ubookname, uquestion, uchoices=[], uanswer=0, umode=1):
+    def UpdateQuizBook(self, ubookname, uquestion, uchoices=[], uanswer=0, umode=True):
         fixed_ubookname = self._checkBookName(ubookname)
-        fixed_answer = uanswer
-        if umode == 1:
-            fixed_answer = uchoices[int(uanswer)]
+        fixed_answer = uchoices[int(uanswer)]
         jsnFile = open(str(fixed_ubookname), 'r+', encoding="utf-8")
         self.AddQuizToList(os.path.realpath(jsnFile.name))
         data = json.loads(jsnFile.read())
@@ -147,18 +153,28 @@ class PythonQuiz:
             savequizList.truncate()
             savequizList.close()
 
-    def CreateQuizlet(self, quizname, question, choices=[], answer=0, mode=1):
-        ''' quizname:   # Required
-                * Enter existing or new Quiz Book name
-            question:   # Required
-                * Question of Quizlet
-            choices:    # Required if mode=False
-                * Answers to question
-            mode:       # Optional
-                * 0: True or False quizlet
-                * 1: Multiple Choice quizlet
-                * 2: Input quizlet
-        '''
+    @property
+    def AllQuizBook(self):
+        """Get all Quiz Book from quizList.json"""
+        if os.path.exists("quizList.json"):
+            savequizList = open("quizList.json", "r+", encoding="utf-8")
+            data = json.loads(savequizList.read())
+            quizList = data["QuizList"]
+            returnList = []
+            for quiz in quizList:
+                if os.path.exists(quiz):
+                    filename = Path(quiz).stem
+                    returnList.append(self.QuizBook(filename))
+                else:
+                    data["QuizList"].remove(quiz)
+                    savequizList.seek(0)
+                    json.dump(data, savequizList, indent=2)
+                    savequizList.truncate()
+            return returnList
+        else:
+            return None
+
+    def CreateQuizlet(self, quizname, question, choices=[], answer=0, mode=True):
         self.QuizBook(quizname, question, choices, answer, mode)
 
     def ResetQuiz(self, qbookname, qquestion):
@@ -261,10 +277,3 @@ class PythonQuiz:
             return True
         except Exception:
             return False
-
-
-quiz = PythonQuiz()
-# quiz.QuizBookOptions(bookname="Test", qrandom=True)
-test = quiz.QuizBook("Cool")
-test.Add("Wata")
-print(quiz.getAllQuizletInfo("Test"))
