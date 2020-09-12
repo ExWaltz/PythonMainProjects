@@ -21,4 +21,5 @@ def Timer(hours, minutes, seconds, prnt=False):
             h, m, s = timeLeft
             sTime = "{}:{}:{}".format(h, m, s)
             print(sTime)
+        yield timeLeft
     return True
