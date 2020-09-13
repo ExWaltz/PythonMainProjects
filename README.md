@@ -9,7 +9,7 @@ Limits: No External Module
 - [ ] Movies app
 - [ ] Weather app
 - [ ] Drawing app
-- [ ] Timer/Clock app
+- [X] Timer/Clock app
 - [ ] Password Generator
 
 Once I finish all the project list I'll move to another programming language
