@@ -1,6 +1,5 @@
 import tkinter as tk
 from Quiz import PythonQuiz as pq
-from tkinter import ttk
 
 
 class App():
@@ -8,8 +7,8 @@ class App():
         self.root = tk.Tk()
         self.root.title("PyQuiz")
         self.root.geometry("500x600")
+        self.root.update()
         self._main_Frame()
-        self.GetQuizzes()
         self.root.mainloop()
 
     def _main_Frame(self):
@@ -23,11 +22,16 @@ class App():
         mainText.pack()
         self._hLine(self.mainFrame)
         contentHolder = tk.Frame(self.mainFrame)
-        contentHolder.pack(fill="both")
+        contentHolder.pack(fill="both", pady=10)
+        self.root.update()
+        quizInfo = self.GetQuizzes()
+        for eachQuiz in quizInfo:
+            self._main_Content(contentHolder, eachQuiz)
+            self.root.update()
 
     def _main_Content(self, parent, title=""):
         frameContent = tk.Frame(parent)
-        content = tk.Button(frameContent, text=title, height=2)
+        content = tk.Button(frameContent, text=title, height=2, relief="solid")
         frameContent.pack(fill="x", padx=10, pady=5)
         content.pack(fill="x")
         self._main_Content.__dict__["content"] = content
@@ -40,8 +44,11 @@ class App():
         return hrline
 
     def GetQuizzes(self):
-        quizzes = pq().AllQuizBook[0]
-        print(quizzes)
+        quizzes = pq().AllQuizBook
+        quizInfo = {}
+        for each in quizzes:
+            quizInfo[each.name] = each.allquiz
+        return quizInfo
 
 
 App()
