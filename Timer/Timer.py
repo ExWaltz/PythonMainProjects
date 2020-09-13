@@ -1,25 +1,22 @@
-import time
+from datetime import timedelta
+from datetime import datetime
 
 
-def Timer(hours, minutes, seconds, prnt=False):
-    currentTime = time.strftime("%H:%M:%S", time.localtime())
-    intTime = [int(e) for e in currentTime.split(':')]
-    timeOffset = [int(hours), int(minutes), int(seconds)]
-    timelimit = [curTime + offTime for curTime, offTime in zip(intTime, timeOffset)]
-    if timelimit[0] >= 24:
-        timelimit[0] = timelimit[0] - 24
-    for num, limit in enumerate(timelimit[1:]):
-        while limit >= 60:
-            timelimit[num + 1] = limit - 60
-            timelimit[num] += 1
-            limit -= 60
-    while timelimit > intTime:
-        currentTime = time.strftime("%H:%M:%S", time.localtime())
-        intTime = [int(e) for e in currentTime.split(':')]
-        timeLeft = [tLimit - curTime for curTime, tLimit in zip(intTime, timelimit)]
-        if prnt:
-            h, m, s = timeLeft
-            sTime = "{}:{}:{}".format(h, m, s)
-            print(sTime)
-        yield timeLeft
+def Timer(h, m, s):
+    nTime = datetime.now()
+    fTime = nTime + timedelta(hours=int(h), minutes=int(m), seconds=int(s))
+    while fTime > nTime:
+        nTime = datetime.now()
+        sTime = fTime - nTime
+        days, seconds = sTime.days, sTime.seconds
+        hours = days * 24 + seconds // 3600
+        minutes = (seconds % 3600) // 60
+        seconds = seconds % 60
+        iTime = [hours, minutes, seconds]
+        for e in iTime:
+            if e < 0:
+                break
+            yield iTime
+        # sTime = sTime.strftime("%H:%M:%S")
+        # iTime = [e for e in str(sTime).split(":")]
     return True
