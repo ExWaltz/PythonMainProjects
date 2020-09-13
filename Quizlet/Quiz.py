@@ -60,13 +60,12 @@ class PythonQuiz:
                                  "recordTime": {fixed_recordTime}
                                  }}]}}'''
                 else:
-                    data = f'''{{
-                                 "{bookname}": [{{
+                    data = f'''{{"{bookname}": [{{
                                  "{fixed_question}": [{{
                                  "choices": {fixed_choices},
                                  "answer": {fixed_answer},
                                  "mode": {fixed_mode},
-                                 "original": {question},
+                                 "original": "{question}",
                                  "time": null}}],
                                  "random": {fixed_random},
                                  "recordTime": {fixed_recordTime}
@@ -81,29 +80,31 @@ class PythonQuiz:
                 self.UpdateQuizBook(bookname, question, choices, answer, mode)
 
             # Quizlet options
-            def AddQuizlet(question, choice=[], answer=0, mode=True):
-                if mode:
-                    choice = [False, True]
-                self.UpdateQuizBook(bookname, question, choice, answer, mode)
+            def QuizletOpt():
+                def AddQuizlet(question, choice=[], answer=0, mode=True):
+                    if mode:
+                        choice = [False, True]
+                    self.UpdateQuizBook(bookname, question, choice, answer, mode)
 
-            def RemoveQuizlet(question):
-                self.DeleteQuizlet(bookname, question)
+                def RemoveQuizlet(question):
+                    self.DeleteQuizlet(bookname, question)
 
-            def GetQuizInfo(question):
-                return self.getQuizletInfo(bookname, question)
+                def GetQuizInfo(question):
+                    return self.getQuizletInfo(bookname, question)
 
-            def IsExist(question):
-                return self._verifyQuizlet(bookname, question)
+                def IsExist(question):
+                    return self._verifyQuizlet(bookname, question)
 
-            self.QuizBook.__dict__["add"] = AddQuizlet
-            self.QuizBook.__dict__["remove"] = RemoveQuizlet
-            self.QuizBook.__dict__["quiz"] = GetQuizInfo
-            self.QuizBook.__dict__["allquiz"] = self.getAllQuizletInfo(bookname)
-            self.QuizBook.__dict__["allquestions"] = self.getQuestions(bookname)
-            self.QuizBook.__dict__["exist"] = IsExist
-            self.QuizBook.__dict__["name"] = bookname
+                QuizletOpt.__dict__["add"] = AddQuizlet
+                QuizletOpt.__dict__["remove"] = RemoveQuizlet
+                QuizletOpt.__dict__["quiz"] = GetQuizInfo
+                QuizletOpt.__dict__["allquiz"] = self.getAllQuizletInfo(bookname)
+                QuizletOpt.__dict__["allquestions"] = self.getQuestions(bookname)
+                QuizletOpt.__dict__["exist"] = IsExist
+                QuizletOpt.__dict__["name"] = bookname
 
-            return self.QuizBook
+            QuizletOpt()
+            return QuizletOpt
 
         except Exception as e:
             raise e("TypeError: Invalid Type")
@@ -167,6 +168,7 @@ class PythonQuiz:
     def AddQuizToList(self, bookname):
         """Save QuizBook in quizList.json"""
         bookpath = str(bookname).replace("\\", "/")
+        bookpath = bookpath.upper()
         if not os.path.exists("quizList.json"):
             savequizList = open("quizList.json", "w", encoding="utf-8")
             data = f'{{"QuizList": ["{str(bookpath)}"]}}'
@@ -197,7 +199,8 @@ class PythonQuiz:
             for quiz in quizList:
                 if os.path.exists(quiz):
                     filename = Path(quiz).stem
-                    returnList.append(self.QuizBook(filename))
+                    qb = self.QuizBook(filename)
+                    returnList.append(qb)
                 else:
                     data["QuizList"].remove(quiz)
                     savequizList.seek(0)
