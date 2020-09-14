@@ -1,4 +1,5 @@
 *.quiz
 *.json
+*.todo
 test.py
 __pycache__
