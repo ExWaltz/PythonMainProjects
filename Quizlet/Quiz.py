@@ -92,17 +92,15 @@ class PythonQuiz:
                 def GetQuizInfo(question):
                     return self.getQuizletInfo(bookname, question)
 
-                def IsExist(question):
-                    return self._verifyQuizlet(bookname, question)
-
                 QuizletOpt.__dict__["add"] = AddQuizlet
                 QuizletOpt.__dict__["remove"] = RemoveQuizlet
                 QuizletOpt.__dict__["quiz"] = GetQuizInfo
                 QuizletOpt.__dict__["allquiz"] = self.getAllQuizletInfo(bookname)
-                QuizletOpt.__dict__["allquestions"] = self.getQuestions(bookname)
-                QuizletOpt.__dict__["exist"] = IsExist
+                QuizletOpt.__dict__["info"] = self.getBookInfo(bookname)
+                QuizletOpt.__dict__["path"] = os.path.realpath(fixed_bookname)
                 QuizletOpt.__dict__["name"] = bookname
 
+                # QuizletOpt.__dict__["allquestions"] = self.getQuestions(bookname)
             QuizletOpt()
             return QuizletOpt
 
@@ -146,10 +144,15 @@ class PythonQuiz:
             data[str(ubookname)][0][fixed_question] = [uquestionData]
 
         data[str(ubookname)][0][fixed_question][0] = uquestionData
+
         jsnFile.seek(0)
         json.dump(data, jsnFile, indent=2)
         jsnFile.truncate()
         jsnFile.close()
+
+    def DeleteQuizBook(self, bookname):
+        path = os.path.realpath(bookname)
+        os.remove(path)
 
     def DeleteQuizlet(self, bookname, qquestion):
         if self._verifyQuizlet(bookname, qquestion):
@@ -206,6 +209,7 @@ class PythonQuiz:
                     savequizList.seek(0)
                     json.dump(data, savequizList, indent=2)
                     savequizList.truncate()
+            savequizList.close()
             return returnList
         else:
             return None
@@ -215,25 +219,17 @@ class PythonQuiz:
             Update or Add question to QuizBook"""
         self.QuizBook(quizname, question, choices, answer, mode)
 
-    # def ResetQuiz(self, bookname, question):
-    #     """Reset Everything inside the QuizBook. (All Recorded Time will be erased)"""
-    #     fixed_bookname = self._checkBookName(bookname)
-    #     bookname = str(bookname).upper()
-    #     jsnFile = open(str(fixed_bookname), 'r+', encoding="utf-8")
-    #     data = json.loads(jsnFile.read())
-    #     quizBookData = data.get(str(bookname))[0]
-    #     isRand = quizBookData.get("random")
-    #     isTime = quizBookData.get("recordTime")
-    #     if isRand:
-    #         ansList = quizBookData[0][0]["choices"]
-    #         random.shuffle(ansList)
-    #         quizBookData[0][0]["choices"] = ansList
-    #     if isTime:
-    #         quizBookData[0][0]["time"] = "null"
-    #     jsnFile.seek(0)
-    #     json.dump(data, jsnFile, indent=2)
-    #     jsnFile.truncate()
-    #     jsnFile.close()
+    def getBookInfo(self, bookname):
+        fixed_bookname = self._checkBookName(bookname)
+        bookname = str(bookname).upper()
+        jsnFile = open(str(fixed_bookname), 'r', encoding="utf-8")
+        data = json.loads(jsnFile.read())
+        quizBookData = data.get(bookname)[0]
+        rand = quizBookData["random"]
+        recTime = quizBookData["recordTime"]
+        compInfo = [bookname, rand, recTime]
+        jsnFile.close()
+        return compInfo
 
     def getAllQuizletInfo(self, bookname):
         """ Get all quizlet info from QuizBook
@@ -254,13 +250,23 @@ class PythonQuiz:
             random.shuffle(quizQuestions)
         quizInfo = []
         for eachQuestion in quizQuestions:
-            question = data[bookname][0][eachQuestion][0]["original"]
-            choices = data[bookname][0][eachQuestion][0]["choices"]
-            answer = data[bookname][0][eachQuestion][0]["answer"]
-            time = data[bookname][0][eachQuestion][0]["time"]
-            compileInfo = [question, choices, answer, time]
+            # question = data[bookname][0][eachQuestion][0]["original"]
+            # choices = data[bookname][0][eachQuestion][0]["choices"]
+            # answer = data[bookname][0][eachQuestion][0]["answer"]
+            # time = data[bookname][0][eachQuestion][0]["time"]
+            # compileInfo = [question, choices, answer, time]
+            compileInfo = self.filterInfo(data, bookname, eachQuestion)
             quizInfo.append(compileInfo)
+        jsnFile.close()
         return quizInfo
+
+    def filterInfo(self, data, bookname, question):
+        qquestion = data[bookname][0][question][0]["original"]
+        qchoices = data[bookname][0][question][0]["choices"]
+        qanswer = data[bookname][0][question][0]["answer"]
+        qtime = data[bookname][0][question][0]["time"]
+        compileInfo = [qquestion, qchoices, qanswer, qtime]
+        return compileInfo
 
     def getQuizletInfo(self, bookname, quizletname):
         """ Get a specific quizlet info from a Quizbook.
@@ -271,27 +277,14 @@ class PythonQuiz:
         jsnFile = open(str(fixed_bookname), 'r+', encoding="utf-8")
         data = json.loads(jsnFile.read())
         if data.get(bookname)[0].get(quizletname):
-            quizQuestion = data[bookname][0][quizletname][0]["original"]
-            quizChoices = data[bookname][0][quizletname][0]["choices"]
-            quizAnswer = data[bookname][0][quizletname][0]["answer"]
-            quizTime = data[bookname][0][quizletname][0]["time"]
-            compileInfo = [quizQuestion, quizChoices, quizAnswer, quizTime]
+            # quizQuestion = data[bookname][0][quizletname][0]["original"]
+            # quizChoices = data[bookname][0][quizletname][0]["choices"]
+            # quizAnswer = data[bookname][0][quizletname][0]["answer"]
+            # quizTime = data[bookname][0][quizletname][0]["time"]
+            # compileInfo = [quizQuestion, quizChoices, quizAnswer, quizTime]
+            compileInfo = self.filterInfo(data, bookname, quizletname)
+            jsnFile.close()
             return compileInfo
-
-    def getQuestions(self, bookname):
-        """ Get all the questions from a QuizBook
-            will return a list of questions"""
-        fixed_bookname = self._checkBookName(bookname)
-        jsnFile = open(str(fixed_bookname), 'r+', encoding="utf-8")
-        data = json.loads(jsnFile.read())
-        quizBookData = data.get(bookname)[0]
-        quizQuestions = list(dict.fromkeys(quizBookData))
-        quizQuestions.remove("random")
-        quizQuestions.remove("recordTime")
-        isRand = quizBookData.get("random")
-        if isRand:
-            random.shuffle(quizQuestions)
-        return quizQuestions
 
     def _checkBookName(self, bookname):
         """Check if file input has .quiz extension"""
@@ -316,6 +309,7 @@ class PythonQuiz:
             data = json.loads(jsnFile.read())
             data[bookname][0]["random"]
             data[bookname][0]["recordTime"]
+            jsnFile.close()
             return True
         except Exception:
             return False
@@ -332,6 +326,52 @@ class PythonQuiz:
             data[bookname][0][quizletname][0]["answer"]
             data[bookname][0][quizletname][0]["mode"]
             data[bookname][0][quizletname][0]["time"]
+            jsnFile.close()
             return True
         except Exception:
             return False
+
+    # Things are I think are overshadowed by other functions
+    # In other words useless stuff
+    # U can use them if you want
+
+    # I have trouble implementing this one
+    # I decided to add this feature to the GUI instead of the package
+    #
+    # def ResetQuiz(self, bookname, question):
+    #     """Reset Everything inside the QuizBook. (All Recorded Time will be erased)"""
+    #     fixed_bookname = self._checkBookName(bookname)
+    #     bookname = str(bookname).upper()
+    #     jsnFile = open(str(fixed_bookname), 'r+', encoding="utf-8")
+    #     data = json.loads(jsnFile.read())
+    #     quizBookData = data.get(str(bookname))[0]
+    #     isRand = quizBookData.get("random")
+    #     isTime = quizBookData.get("recordTime")
+    #     if isRand:
+    #         ansList = quizBookData[0][0]["choices"]
+    #         random.shuffle(ansList)
+    #         quizBookData[0][0]["choices"] = ansList
+    #     if isTime:
+    #         quizBookData[0][0]["time"] = "null"
+    #     jsnFile.seek(0)
+    #     json.dump(data, jsnFile, indent=2)
+    #     jsnFile.truncate()
+    #     jsnFile.close()
+
+    # Overshadowed by literaly everything
+    # Why did I make this again?
+    #
+    # def getQuestions(self, bookname):
+    #     """ Get all the questions from a QuizBook
+    #         will return a list of questions"""
+    #     fixed_bookname = self._checkBookName(bookname)
+    #     jsnFile = open(str(fixed_bookname), 'r+', encoding="utf-8")
+    #     data = json.loads(jsnFile.read())
+    #     quizBookData = data.get(bookname)[0]
+    #     quizQuestions = list(dict.fromkeys(quizBookData))
+    #     quizQuestions.remove("random")
+    #     quizQuestions.remove("recordTime")
+    #     isRand = quizBookData.get("random")
+    #     if isRand:
+    #         random.shuffle(quizQuestions)
+    #     return quizQuestions
