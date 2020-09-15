@@ -191,6 +191,18 @@ class PythonQuiz:
             savequizList.truncate()
             savequizList.close()
 
+    def quizTime(self, bookname, quizname, time_="null"):
+        fixed_bookname = self._checkBookName(bookname)
+        quizname = str(quizname).lower()
+        bookname = str(bookname).upper()
+        jsnFile = open(str(fixed_bookname), 'r+', encoding="utf-8")
+        data = json.loads(jsnFile.read())
+        data[bookname][0][quizname][0]["time"] = time_
+        jsnFile.seek(0)
+        json.dump(data, jsnFile, indent=2)
+        jsnFile.truncate()
+        jsnFile.close()
+
     @property
     def AllQuizBook(self):
         """Get all QuizBook from quizList.json"""
