@@ -6,6 +6,15 @@ import sys
 
 
 class App:
+    """ Number 8 of my: Let's make 9 python apps
+        All projects are at https://github.com/ExWaltz/PythonMainProjects
+
+        # Future Improvements:
+            * Add an option to change the alarm
+            * Show the real clock
+            * Improve visual design
+    """
+
     def __init__(self):
         self.root = tk.Tk()
         self.root.title("Timer")

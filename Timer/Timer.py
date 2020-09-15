@@ -3,20 +3,22 @@ from datetime import datetime
 
 
 def Timer(h, m, s):
-    nTime = datetime.now()
-    fTime = nTime + timedelta(hours=int(h), minutes=int(m), seconds=int(s))
-    while fTime > nTime:
-        nTime = datetime.now()
-        sTime = fTime - nTime
+    """ Number 8 of my: Let's make 9 python apps
+        All projects are at https://github.com/ExWaltz/PythonMainProjects
+    """
+    nTime = datetime.now()  # Get Current Time
+    fTime = nTime + timedelta(hours=int(h), minutes=int(m), seconds=int(s))     # Get time offset
+    while fTime > nTime:    # Run code until current time is greater than time offset
+        nTime = datetime.now()      # Update current time
+        sTime = fTime - nTime       # Calculate the time difference between time offset and current time
+        # Convert time difference into hours, minutes and seconds
         days, seconds = sTime.days, sTime.seconds
         hours = days * 24 + seconds // 3600
         minutes = (seconds % 3600) // 60
         seconds = seconds % 60
         iTime = [hours, minutes, seconds]
         for e in iTime:
-            if e < 0:
+            if e < 0:       # Incase of error break of this loop
                 break
-            yield iTime
-        # sTime = sTime.strftime("%H:%M:%S")
-        # iTime = [e for e in str(sTime).split(":")]
-    return True
+            yield iTime     # Return Time left
+    return True     # To indicate that the timer is done
