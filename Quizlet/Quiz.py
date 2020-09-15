@@ -57,7 +57,8 @@ class PythonQuiz:
                 if question is None:
                     data = f'''{{"{bookname}": [{{
                                  "random": {fixed_random},
-                                 "recordTime": {fixed_recordTime}
+                                 "recordTime": {fixed_recordTime},
+                                 "bestTime": null
                                  }}]}}'''
                 else:
                     data = f'''{{"{bookname}": [{{
@@ -68,7 +69,8 @@ class PythonQuiz:
                                  "original": "{question}",
                                  "time": null}}],
                                  "random": {fixed_random},
-                                 "recordTime": {fixed_recordTime}
+                                 "recordTime": {fixed_recordTime},
+                                 "bestTime": null
                                  }}]}}'''
                 # Save json file
                 jsnLoad = json.loads(data)
@@ -226,6 +228,29 @@ class PythonQuiz:
         else:
             return None
 
+    def AvgTime(self, bookname):
+        fixed_bookname = self._checkBookName(bookname)
+        quizzes = self.getAllQuizletInfo(bookname)
+        bookname = str(bookname).upper()
+        jsnFile = open(str(fixed_bookname), 'r+', encoding="utf-8")
+        data = json.loads(jsnFile.read())
+        allQuizTime = [eq[-1] for eq in quizzes]
+        bestTime = 0
+        for eqt in allQuizTime:
+            feq = float(eqt)
+            bestTime += feq
+        bestTime /= len(allQuizTime)
+        bestTime = float("%.2f" % bestTime)
+        initBestTime = data[bookname][0]["bestTime"]
+        if bestTime <= initBestTime:
+            print("New HighScore")
+            data[bookname][0]["bestTime"] = bestTime
+        jsnFile.seek(0)
+        json.dump(data, jsnFile, indent=2)
+        jsnFile.truncate()
+        jsnFile.close()
+        return bestTime
+
     def CreateQuizlet(self, quizname, question, choices=[], answer=0, mode=True):
         """ Make a Quizbook and add a quizlet. If quizname already exist then
             Update or Add question to QuizBook"""
@@ -239,7 +264,8 @@ class PythonQuiz:
         quizBookData = data.get(bookname)[0]
         rand = quizBookData["random"]
         recTime = quizBookData["recordTime"]
-        compInfo = [bookname, rand, recTime]
+        bTime = quizBookData["bestTime"]
+        compInfo = [bookname, rand, recTime, bTime]
         jsnFile.close()
         return compInfo
 
@@ -255,6 +281,7 @@ class PythonQuiz:
         quizQuestions = list(dict.fromkeys(quizBookData))
         quizQuestions.remove("random")
         quizQuestions.remove("recordTime")
+        quizQuestions.remove("bestTime")
         if len(quizQuestions) == 0:
             return []
         isRand = quizBookData.get("random")
@@ -321,6 +348,7 @@ class PythonQuiz:
             data = json.loads(jsnFile.read())
             data[bookname][0]["random"]
             data[bookname][0]["recordTime"]
+            data[bookname][0]["bestTime"]
             jsnFile.close()
             return True
         except Exception:
