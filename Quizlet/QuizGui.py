@@ -1,4 +1,5 @@
 import tkinter as tk
+import time
 import random
 from Quiz import PythonQuiz as qb
 
@@ -8,6 +9,7 @@ class App():
         self.titleFont = ("Century Gothic bold", 32)
         self.largeFont = ("Century Gothic", 22)
         self.mainFont = ("Century Gothic", 16)
+        self.smallFont = ("Century Gothic", 12)
         self.root = tk.Tk()
         self.root.title("PyQuiz")
         self.root.geometry("500x600")
@@ -27,21 +29,21 @@ class App():
         self.contentHolder = tk.Frame(self.mainFrame)
         self.contentHolder.pack(fill="both", pady=10)
         self.root.update_idletasks()
-        quizInfo = self.GetQuizzes()
-        for eachQuiz, eachVal in quizInfo.items():
+        self.quizInfo = self.GetQuizzes()
+        for eachQuiz, eachVal in self.quizInfo.items():
             self._main_Content(self.contentHolder, eachQuiz, eachVal)
             self.root.update_idletasks()
 
     def _main_Content(self, parent, title="", quizInfo=None):
         frameContent = tk.Frame(parent)
-        content = tk.Button(frameContent, text=title, height=2, relief="solid", command=lambda: self._openQuiz(title, quizInfo))
+        content = tk.Button(frameContent, text=title, height=2, relief="solid", font=self.mainFont, command=lambda: self._openQuiz(title, quizInfo))
         frameContent.pack(fill="x", padx=10, pady=5)
         content.pack(fill="x")
         self._main_Content.__dict__["content"] = content
         self._main_Content.__dict__["frame"] = frameContent
         return self._main_Content
 
-    def _startQuiz(self, quizInfo):
+    def _startQuiz(self, title, quizInfo, bTime):
         self.questionFrame.forget()
         self.holdquiz = tk.Frame(self.mainFrame)
         quizFrame = tk.Frame(self.holdquiz)
@@ -51,24 +53,61 @@ class App():
         choiceFrame.pack(side="top")
         self.root.update()
         self.correct = False
+        self.tries = 0
         for eq in quizInfo:
-            question = tk.Label(quizFrame, text=eq[0])
-            question.pack()
+            question = tk.Label(quizFrame, text=eq[0], font=self.titleFont)
+            question.pack(side="top", anchor="n", pady=50)
+            cList = []
             for choice in eq[1]:
-                print(choice)
-                # not properly adding choices
-                choices = tk.Button(choiceFrame, text=choice, command=lambda: self._answer(choice, eq[2]))
-                choices.pack()
+                chButton = self._button(choiceFrame, choice, eq[2])
+                cList.append(chButton)
+            initTime = time.time()
+            self.root.update()
             while not self.correct:
                 self.root.update_idletasks()
                 self.root.update()
+            question.destroy()
+            endTime = time.time()
+            finalTime = float("%.2f" % (endTime - initTime))
+            eq[3] = finalTime
+            for e in cList:
+                e.destroy()
+            self.correct = False
+            self.root.update()
+            qb().quizTime(title, eq[0], eq[3])
+        quizFrame.forget()
+        choiceFrame.forget()
+        tryTime = qb().AvgTime(title)
+        resText = f"Total Mistakes: \t{self.tries}\nTime: \t\t{tryTime}\nBest Time: \t{bTime}"
+        if tryTime < bTime:
+            highScore = tk.Label(self.holdquiz, text="New High Score", font=self.titleFont)
+            highScore.pack(pady=100)
+        results = tk.Label(self.holdquiz, text=resText, font=self.mainFont, justify="left")
+        retryQuiz = tk.Button(self.holdquiz, text="Retry", width=40, height=3, font=self.smallFont, command=lambda: self._retry(title, quizInfo, bTime))
+        returnMain = tk.Button(self.holdquiz, text="Go Back To Main Menu", width=40, height=3, font=self.smallFont, command=self._returnMain)
+        results.pack(pady=10)
+        retryQuiz.pack()
+        returnMain.pack()
+
+    def _button(self, parent, name, answer):
+        ch = tk.Button(parent, text=str(name), font=self.smallFont, command=lambda: self._answer(name, answer), width=40, height=3)
+        ch.pack()
+        return ch
 
     def _answer(self, choice, answer):
-        print([choice, answer])
         if choice == answer:
             self.correct = True
             return
+        self.tries += 1
         self.correct = False
+
+    def _returnMain(self):
+        self.mainFrame.destroy()
+        self._main_Frame()
+
+    def _retry(self, title, quizInfo, bTime):
+        self.holdquiz.destroy()
+        self._startQuiz(title, quizInfo, bTime)
 
     def _openQuiz(self, title, quizInfo):
         self.contentHolder.forget()
@@ -80,10 +119,12 @@ class App():
         self.root.update_idletasks()
         if len(quizInfo[0]) != 0:
             nquizText = f"{len(quizInfo[0])} quiz"
-            nquizInfo = f"Random: {quizInfo[1][1]}\nRecord Time: {quizInfo[1][2]}"
+            nquizInfo = f"Random: \t{quizInfo[1][1]}\n"
+            if quizInfo[1][2]:
+                nquizInfo += f"Best Time:\t{quizInfo[1][3]}"
             numQuiz = tk.Label(quizBookFrame, text=nquizText, font=self.largeFont, wraplength=300)
             infoQuiz = tk.Label(quizBookFrame, text=nquizInfo, font=self.mainFont, wraplength=300, justify="left")
-            startButton = tk.Button(self.questionFrame, text="Start Quiz", height=3, command=lambda: self._startQuiz(quizInfo[0]))
+            startButton = tk.Button(self.questionFrame, text="Start Quiz", height=3, font=self.smallFont, command=lambda: self._startQuiz(title, quizInfo[0], quizInfo[1][3]))
             numQuiz.pack()
             infoQuiz.pack()
             startButton.pack(fill="x", pady=10)
