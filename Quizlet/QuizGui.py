@@ -5,6 +5,10 @@ from Quiz import PythonQuiz as qb
 
 
 class App():
+    """ Number 1 of my: Let's make 9 python apps
+        All projects are at https://github.com/ExWaltz/PythonMainProjects
+    """
+
     def __init__(self):
         self.titleFont = ("Century Gothic bold", 32)
         self.largeFont = ("Century Gothic", 22)
@@ -43,7 +47,7 @@ class App():
         self._main_Content.__dict__["frame"] = frameContent
         return self._main_Content
 
-    def _startQuiz(self, title, quizInfo, bTime):
+    def _startQuiz(self, title, quizInfo, bTime, rng):
         self.questionFrame.forget()
         self.holdquiz = tk.Frame(self.mainFrame)
         quizFrame = tk.Frame(self.holdquiz)
@@ -52,6 +56,8 @@ class App():
         quizFrame.pack(side="top")
         choiceFrame.pack(side="top")
         self.root.update()
+        if rng:
+            random.shuffle(quizInfo)
         self.correct = False
         self.tries = 0
         for eq in quizInfo:
@@ -124,7 +130,7 @@ class App():
                 nquizInfo += f"Best Time:\t{quizInfo[1][3]}"
             numQuiz = tk.Label(quizBookFrame, text=nquizText, font=self.largeFont, wraplength=300)
             infoQuiz = tk.Label(quizBookFrame, text=nquizInfo, font=self.mainFont, wraplength=300, justify="left")
-            startButton = tk.Button(self.questionFrame, text="Start Quiz", height=3, font=self.smallFont, command=lambda: self._startQuiz(title, quizInfo[0], quizInfo[1][3]))
+            startButton = tk.Button(self.questionFrame, text="Start Quiz", height=3, font=self.smallFont, command=lambda: self._startQuiz(title, quizInfo[0], quizInfo[1][3], quizInfo[1][1]))
             numQuiz.pack()
             infoQuiz.pack()
             startButton.pack(fill="x", pady=10)

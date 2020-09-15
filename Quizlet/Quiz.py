@@ -13,6 +13,14 @@ from pathlib import Path
 
 
 class PythonQuiz:
+    """ Number 1 of my: Let's make 9 python apps
+        All projects are at https://github.com/ExWaltz/PythonMainProjects
+
+        # Future Improvements
+            * Make the code more readable
+            * Add more documentation
+    """
+
     def QuizBook(self, bookname, question=None, choices=[], answer=0, mode=True, qrandom=False, recordTime=True):
         ''' bookname:   # Required
                 * Enter existing or new Quiz Book name
