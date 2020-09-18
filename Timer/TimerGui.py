@@ -21,6 +21,7 @@ class App:
         self.root.geometry("500x300")
         self.mainFont = ("Century Gothic", 32)
         self.sideFont = ("Century Gothic", 15)
+        self.root.configure(background='#ffffff')
         self.SetTimer()
         self.root.protocol("WM_DELETE_WINDOW", self._onquit)
         self.root.mainloop()
@@ -33,7 +34,7 @@ class App:
             pass
 
     def _timeSetter(self, tkParent, tkInt):
-        tText = tk.Entry(tkParent, textvariable=tkInt, width=3, font=self.sideFont, relief="flat", justify='right')
+        tText = tk.Entry(tkParent, textvariable=tkInt, width=3, font=self.sideFont, relief="flat", justify='right', disabledbackground="#ffffff")
         tText.pack(side="left")
         return tText
 
@@ -84,9 +85,9 @@ class App:
             return
 
     def SetTimer(self):
-        mainFrame = tk.Frame(self.root)
+        mainFrame = tk.Frame(self.root, bg="#ffffff")
         mainFrame.pack(side="top", expand=1)
-        timerFrame = tk.Frame(mainFrame, bd=5, height=100)
+        timerFrame = tk.Frame(mainFrame, bd=5, height=100, bg="#ffffff")
         hour = tk.IntVar()
         minute = tk.IntVar()
         second = tk.IntVar()
@@ -96,14 +97,14 @@ class App:
         self.AlarmState = False
         tFormat = [hour, minute, second]
         tLabel = ["h", "m", "s"]
-        self.timerButton = tk.Button(mainFrame, textvariable=self.buttonText, bd=1, relief="solid", font=self.sideFont, command=lambda: self._startTimer(tFormat))
+        self.timerButton = tk.Button(mainFrame, textvariable=self.buttonText, bd=1, relief="solid", font=self.sideFont, bg="#ffffff", command=lambda: self._startTimer(tFormat))
         timerFrame.pack(side="top", expand=1)
         self.timerButton.pack(side="top", fill="x", expand=0)
         self.timerNum = []
         self.root.update()
         for tf, tl in zip(tFormat, tLabel):
             tIn = self._timeSetter(timerFrame, tf)
-            tk.Label(timerFrame, text=tl, font=self.sideFont).pack(side="left", anchor="s")
+            tk.Label(timerFrame, text=tl, font=self.sideFont, bg="#ffffff").pack(side="left", anchor="s")
             self.timerNum.append(tIn)
             self.root.update_idletasks()
         self.root.update()
