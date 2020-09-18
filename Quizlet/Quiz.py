@@ -251,7 +251,6 @@ class PythonQuiz:
         bestTime = float("%.2f" % bestTime)
         initBestTime = data[bookname][0]["bestTime"]
         if bestTime <= initBestTime:
-            print("New HighScore")
             data[bookname][0]["bestTime"] = bestTime
         jsnFile.seek(0)
         json.dump(data, jsnFile, indent=2)
