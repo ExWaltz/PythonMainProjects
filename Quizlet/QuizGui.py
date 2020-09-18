@@ -23,8 +23,7 @@ class App():
 
     def _mainFrame(self):
         self.mainFrame = tk.Frame(self.root)
-        TextFrame = tk.Frame(self.mainFrame, bg="#ffffff",
-                             width=500, height=70, bd=10)
+        TextFrame = tk.Frame(self.mainFrame, bg="#ffffff", width=500, height=70, bd=10)
         self.mainText = tk.Label(TextFrame, text="PyQuiz", font=self.titleFont)
         self.goBack = tk.Button(TextFrame, text="Back", font=self.smallFont)
         self.mainFrame.pack(fill="both", expand=1)
@@ -33,6 +32,9 @@ class App():
         self._hLine(self.mainFrame)
         self.contentHolder = tk.Frame(self.mainFrame)
         self.contentHolder.pack(fill="both", pady=10)
+        newQuiz = tk.Button(self.contentHolder, text="New Quiz", height=2, relief="solid", font=self.mainFont, command=self._newQuiz)
+        newQuiz.pack(fill="x")
+        self._hLine(self.contentHolder).pack_configure(pady=10)
         self.root.update_idletasks()
         self.quizInfo = self.GetQuizzes()
         for eachQuiz, eachVal in self.quizInfo.items():
@@ -100,28 +102,6 @@ class App():
         retryQuiz.pack()
         returnMain.pack()
 
-    def _button(self, parent, name, answer, row, col):
-        row = row % 2
-        col = col % 2
-        ch = tk.Button(parent, text=str(name), font=self.smallFont, command=lambda: self._answer(name, answer), width=20, height=3)
-        ch.grid(row=row, column=col)
-        return ch
-
-    def _answer(self, choice, answer):
-        if choice == answer:
-            self.correct = True
-            return
-        self.tries += 1
-        self.correct = False
-
-    def _returnMain(self):
-        self._delWidget(self.mainFrame)
-        self._mainFrame()
-
-    def _retry(self, title, quizInfo, bTime, rng):
-        self._delWidget(self.holdquiz)
-        self._startQuiz(title, quizInfo, bTime, rng)
-
     def _openQuiz(self, title, quizInfo):
         self.contentHolder.forget()
         self.mainText.config(text=title)
@@ -155,47 +135,63 @@ class App():
         self.root.update()
 
     def _newQuiz(self):
-        self.questionFrame.forget()
+        try:
+            self._delWidget(self.questionFrame)
+        except Exception:
+            pass
+        self._delWidget(self.contentHolder)
+        self.goBack.config(command=self._returnMain)
+        self.goBack.place(relx=0, rely=0.20)
         self.mainText.config(text="New Quiz")
         self.newQuizFrame = tk.Frame(self.mainFrame, bd=10)
         self.newQuizFrame.pack(fill="both")
 
         titleFrame = tk.Frame(self.newQuizFrame)
-        titleFrame.pack(side="top", anchor="w")
-        titleText = tk.Label(titleFrame, text="Title", font=self.mainFont)
-        title = tk.Entry(titleFrame, width=110, font=self.smallFont)
-        titleText.pack(side="left", anchor="nw", pady=10)
-        title.pack(side="top", fill="x", pady=10)
+        titleFrame.pack(side="top", anchor="w", pady=10)
+        titleText = tk.Label(titleFrame, text="Title:\t", font=self.mainFont)
+        title = tk.Entry(titleFrame, font=self.mainFont)
+        titleText.pack(side="left", anchor="nw")
+        title.pack(side="top", fill="x")
 
         OptFrame = tk.Frame(self.newQuizFrame)
-        OptFrame.pack(side="top", anchor="n")
+        OptFrame.pack(side="top", anchor="n", pady=10)
         randVar = tk.BooleanVar()
         recTVar = tk.BooleanVar()
         randomOpt = tk.Radiobutton(OptFrame, text="Random", variable=randVar, value=True)
         recTimeOpt = tk.Radiobutton(OptFrame, text="Record Time", variable=recTVar, value=True)
         resetOpt = tk.Button(OptFrame, text="Reset Options", relief="solid", command=lambda: self._resetOpt(randVar, recTVar))
-        randomOpt.pack(side="left", anchor="nw", pady=10)
-        recTimeOpt.pack(side="left", anchor="nw", pady=10)
-        resetOpt.pack(side="top", anchor="nw", pady=10)
+        randomOpt.pack(side="left", anchor="nw")
+        recTimeOpt.pack(side="left", anchor="nw")
+        resetOpt.pack(side="top", anchor="nw")
 
-        choiceFrame = tk.Frame(self.newQuizFrame)
-        choiceList = []
-        choiceFrame.pack(side="top", anchor="nw")
-        choiceTitle = tk.Label(choiceFrame, text="Choices: ", font=self.mainFont)
-        choiceTitle.pack(side="left", anchor="nw")
-        addChoice = tk.Button(choiceFrame, text="Add Choices")
-        addChoice.config(command=lambda: self._choices(choiceFrame, addChoice, choiceList))
-        choiceEntry = self._choices(choiceFrame, addChoice, choiceList)
-        choiceEntry.pack(side="top")
-        addChoice.pack(side="top", fill="x")
+        questionFrame = tk.Frame(self.newQuizFrame)
+        questionFrame.pack(side="top", anchor="nw", pady=10)
+        questionTitle = tk.Label(questionFrame, text="Question:\t", font=self.mainFont)
+        question = tk.Entry(questionFrame, font=self.mainFont)
+        questionTitle.pack(side="left", anchor="nw")
+        question.pack(side="left", anchor="nw")
+
+        def choiceMode():
+            choiceFrame = tk.Frame(self.newQuizFrame)
+            choiceList = []
+            choiceFrame.pack(side="top", anchor="nw")
+            choiceTitle = tk.Label(choiceFrame, text="Choices:\t", font=self.mainFont)
+            choiceTitle.pack(side="left", anchor="nw")
+            addChoice = tk.Button(choiceFrame, text="Add Choices")
+            addChoice.config(command=lambda: self._choices(choiceFrame, addChoice, choiceList))
+            self._choices(choiceFrame, addChoice, choiceList)
+            addChoice.pack(side="top", fill="x", pady=10)
 
     def _choices(self, parent, button, cList=[]):
-        choice = tk.Entry(parent, font=self.smallFont)
-        choice.pack(side="top")
+        chFrame = tk.Frame(parent)
+        chFrame.pack()
+        choice = tk.Entry(chFrame, font=self.mainFont)
+        delChoice = tk.Button(chFrame, width=2, height=1, text="x", fg="red", command=lambda: self._delWidget(chFrame))
+        choice.pack(side="left")
+        delChoice.pack(side="left")
         button.forget()
-        button.pack(side="top", fill="x")
+        button.pack(side="top", fill="x", pady=10)
         cList.append(choice)
-        print(cList)
         return choice
 
     def _delWidget(self, *widget):
@@ -210,6 +206,28 @@ class App():
         hrline = tk.Frame(parent, bg=bg_)
         hrline.pack(fill="x")
         return hrline
+
+    def _button(self, parent, name, answer, row, col):
+        row = row % 2
+        col = col % 2
+        ch = tk.Button(parent, text=str(name), font=self.smallFont, command=lambda: self._answer(name, answer), width=20, height=3)
+        ch.grid(row=row, column=col)
+        return ch
+
+    def _answer(self, choice, answer):
+        if choice == answer:
+            self.correct = True
+            return
+        self.tries += 1
+        self.correct = False
+
+    def _returnMain(self):
+        self._delWidget(self.mainFrame)
+        self._mainFrame()
+
+    def _retry(self, title, quizInfo, bTime, rng):
+        self._delWidget(self.holdquiz)
+        self._startQuiz(title, quizInfo, bTime, rng)
 
     def GetQuizzes(self):
         quizzes = qb().AllQuizBook
