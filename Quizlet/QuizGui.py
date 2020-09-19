@@ -1,4 +1,5 @@
 import tkinter as tk
+from tkinter import ttk
 import time
 import random
 from Quiz import PythonQuiz as qb
@@ -7,6 +8,9 @@ from Quiz import PythonQuiz as qb
 class App():
     """ Number 1 of my: Let's make 9 python apps
         All projects are at https://github.com/ExWaltz/PythonMainProjects
+        Note to self:
+            * Don't put everything in one class
+            * AAAAAAAAAAAAAAAAAAAAAAAAAAAaAAAAA
     """
 
     def __init__(self):
@@ -111,6 +115,7 @@ class App():
         self.questionFrame.pack(expand=1)
         quizBookFrame = tk.Frame(self.questionFrame, bg="blue", width=2000, bd=100)
         self.root.update_idletasks()
+        print(quizInfo)
         if len(quizInfo[0]) != 0:
             nquizText = f"{len(quizInfo[0])} quiz"
             nquizInfo = f"Random: \t{quizInfo[1][1]}\n"
@@ -119,7 +124,7 @@ class App():
             numQuiz = tk.Label(quizBookFrame, text=nquizText, font=self.largeFont, wraplength=300)
             infoQuiz = tk.Label(quizBookFrame, text=nquizInfo, font=self.mainFont, wraplength=300, justify="left")
             startButton = tk.Button(self.questionFrame, text="Start Quiz", height=3, font=self.smallFont, command=lambda: self._startQuiz(title, quizInfo[0], quizInfo[1][3], quizInfo[1][1]))
-            newQuiz = tk.Button(self.questionFrame, text="New Quiz", font=self.smallFont, command=self._newQuiz)
+            newQuiz = tk.Button(self.questionFrame, text="New Quiz", font=self.smallFont, command=lambda: self._newQuiz(quizInfo[1][0], quizInfo[0], quizInfo[1][1], quizInfo[1][2]))
             editQuiz = tk.Button(self.questionFrame, text="Edit Quiz", font=self.smallFont)
             editQuiz.pack(side="top", anchor="e", pady=10)
             newQuiz.place(relx=0.815, rely=0.022, anchor="ne")
@@ -134,7 +139,7 @@ class App():
         quizBookFrame.pack(side="top")
         self.root.update()
 
-    def _newQuiz(self):
+    def _newQuiz(self, header="New Quiz", questionInfo=[""], mode=True, qrandom=False, recordTime=True):
         try:
             self._delWidget(self.questionFrame)
         except Exception:
@@ -142,7 +147,7 @@ class App():
         self._delWidget(self.contentHolder)
         self.goBack.config(command=self._returnMain)
         self.goBack.place(relx=0, rely=0.20)
-        self.mainText.config(text="New Quiz")
+        self.mainText.config(text=header)
         self.newQuizFrame = tk.Frame(self.mainFrame, bd=10)
         self.newQuizFrame.pack(fill="both")
 
@@ -157,6 +162,8 @@ class App():
         OptFrame.pack(side="top", anchor="n", pady=10)
         randVar = tk.BooleanVar()
         recTVar = tk.BooleanVar()
+        randVar.set(qrandom)
+        recTVar.set(recordTime)
         randomOpt = tk.Radiobutton(OptFrame, text="Random", variable=randVar, value=True)
         recTimeOpt = tk.Radiobutton(OptFrame, text="Record Time", variable=recTVar, value=True)
         resetOpt = tk.Button(OptFrame, text="Reset Options", relief="solid", command=lambda: self._resetOpt(randVar, recTVar))
@@ -171,22 +178,82 @@ class App():
         questionTitle.pack(side="left", anchor="nw")
         question.pack(side="left", anchor="nw")
 
+        qTypeFrame = tk.Frame(self.newQuizFrame)
+        qTypeFrame.pack(side="top", anchor="n")
+        qTypeMode = tk.BooleanVar()
+        qTypeMode.set(mode)
+        trueOrFalseType = tk.Radiobutton(qTypeFrame, text="True or False", font=self.smallFont, variable=qTypeMode, value=True)
+        choicesType = tk.Radiobutton(qTypeFrame, text="Multiple Choice", font=self.smallFont, variable=qTypeMode, value=False)
+        trueOrFalseType.pack(side="left")
+        choicesType.pack(side="left")
+        self.root.update_idletasks()
+
+        choiceList = []
+
         def choiceMode():
-            choiceFrame = tk.Frame(self.newQuizFrame)
-            choiceList = []
-            choiceFrame.pack(side="top", anchor="nw")
-            choiceTitle = tk.Label(choiceFrame, text="Choices:\t", font=self.mainFont)
+            cFrame = tk.Frame(self.newQuizFrame)
+            cFrame.pack(side="top", anchor="nw")
+            mulFrame = tk.Frame(cFrame)
+            mulFrame.pack(side="top", anchor="nw")
+            choiceTitle = tk.Label(mulFrame, text="Choices:\t", font=self.mainFont)
             choiceTitle.pack(side="left", anchor="nw")
-            addChoice = tk.Button(choiceFrame, text="Add Choices")
-            addChoice.config(command=lambda: self._choices(choiceFrame, addChoice, choiceList))
-            self._choices(choiceFrame, addChoice, choiceList)
+            addChoice = tk.Button(mulFrame, text="Add Choices")
+            addChoice.config(command=lambda: self._choices(mulFrame, addChoice, choiceList))
+            for e in questionInfo:
+                cOpt = self._choices(mulFrame, addChoice, choiceList)
+                cOpt.insert(1, str(e[1]))
             addChoice.pack(side="top", fill="x", pady=10)
 
+            def UpdateAnswers(combobox):
+                answerText = []
+                for e in choiceList:
+                    answerText.append(e.get())
+                combobox["values"] = answerText
+
+            answerFrame = tk.Frame(cFrame)
+            answerFrame.pack(side="top", anchor="nw")
+            answerTitle = tk.Label(answerFrame, text="Answers:\t", font=self.mainFont)
+            answerTitle.pack(side="left", anchor="nw")
+            answerCombobox = ttk.Combobox(answerFrame)
+            answerCombobox.configure(postcommand=lambda: UpdateAnswers(answerCombobox))
+            answerCombobox.pack(side="left")
+            UpdateAnswers(answerCombobox)
+            return cFrame
+
+        tofVar = tk.BooleanVar()
+
+        def trueOrFalseMode():
+            tofFrame = tk.Frame(self.newQuizFrame)
+            tofTitle = tk.Label(tofFrame, text="Answer:\t", font=self.mainFont)
+            tofTitle.pack(side="left", anchor="nw")
+            trueButton = tk.Radiobutton(tofFrame, text="True", indicatoron=0, font=self.mainFont, width=10, variable=tofVar, value=True)
+            falseButton = tk.Radiobutton(tofFrame, text="false", indicatoron=0, font=self.mainFont, width=10, variable=tofVar, value=False)
+            tofFrame.pack(side="top", anchor="nw")
+            trueButton.pack(side="left")
+            falseButton.pack(side="left")
+            return tofFrame
+
+        def choiceTrigger(*args):
+            if qTypeMode.get():
+                mList[1].forget()
+                mList[0].pack(side="top", anchor="nw")
+            else:
+                mList[0].forget()
+                mList[1].pack(side="top", anchor="nw")
+            self.root.update_idletasks()
+
+        mList = [trueOrFalseMode(), choiceMode()]
+        qTypeMode.trace("w", choiceTrigger)
+        choiceTrigger("s")
+
     def _choices(self, parent, button, cList=[]):
+        def delWid(cVal, widget):
+            cList.remove(cVal)
+            self._delWidget(widget)
         chFrame = tk.Frame(parent)
         chFrame.pack()
         choice = tk.Entry(chFrame, font=self.mainFont)
-        delChoice = tk.Button(chFrame, width=2, height=1, text="x", fg="red", command=lambda: self._delWidget(chFrame))
+        delChoice = tk.Button(chFrame, width=2, height=1, text="x", fg="red", command=lambda: delWid(choice, chFrame))
         choice.pack(side="left")
         delChoice.pack(side="left")
         button.forget()

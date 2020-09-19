@@ -296,11 +296,6 @@ class PythonQuiz:
             random.shuffle(quizQuestions)
         quizInfo = []
         for eachQuestion in quizQuestions:
-            # question = data[bookname][0][eachQuestion][0]["original"]
-            # choices = data[bookname][0][eachQuestion][0]["choices"]
-            # answer = data[bookname][0][eachQuestion][0]["answer"]
-            # time = data[bookname][0][eachQuestion][0]["time"]
-            # compileInfo = [question, choices, answer, time]
             compileInfo = self.filterInfo(data, bookname, eachQuestion)
             quizInfo.append(compileInfo)
         jsnFile.close()
@@ -323,11 +318,6 @@ class PythonQuiz:
         jsnFile = open(str(fixed_bookname), 'r+', encoding="utf-8")
         data = json.loads(jsnFile.read())
         if data.get(bookname)[0].get(quizletname):
-            # quizQuestion = data[bookname][0][quizletname][0]["original"]
-            # quizChoices = data[bookname][0][quizletname][0]["choices"]
-            # quizAnswer = data[bookname][0][quizletname][0]["answer"]
-            # quizTime = data[bookname][0][quizletname][0]["time"]
-            # compileInfo = [quizQuestion, quizChoices, quizAnswer, quizTime]
             compileInfo = self.filterInfo(data, bookname, quizletname)
             jsnFile.close()
             return compileInfo
