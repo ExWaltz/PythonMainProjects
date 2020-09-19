@@ -5,12 +5,13 @@ from pathlib import Path
 
 
 class QuizBook:
-    # __slots__ = ["title", "disableRandom", "disableRecordTime"]
+    __slots__ = ["title", "disableRandom", "disableRecordTime", "path", "counter"]
 
     def __init__(self, title, disableRandom=True, path=None):
         self.title = str(title).upper()
         self.disableRandom = disableRandom
         self.path = path
+        self.counter = 0
         self.saveQuizBook()
 
     def saveQuizBook(self):
@@ -43,9 +44,7 @@ class QuizBook:
         return f"{path}.quiz"
 
     def fileExists(self, path):
-        if os.path.exists(path):
-            return True
-        return False
+        return os.path.exists(path)
 
     def AllQuestions(self):
         fileName = self.AddExtention(self.path)
@@ -74,9 +73,24 @@ class QuizBook:
         jsnQuizBookData = json.load(quizBookFile)
         try:
             questions = jsnQuizBookData["Questions"][0]
-            return len(questions)
+            count = 0
+            for _ in questions:
+                count += 1
+            return count
         except Exception:
             return 0
+
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+        questions = self.AllQuestions()
+        if self.counter >= len(self):
+            raise StopIteration
+        keys = list(questions.keys())
+        nextInfo = {keys[self.counter]: questions[keys[self.counter]]}
+        self.counter += 1
+        return nextInfo
 
     def remove(self):
         fileName = self.AddExtention(self.path)
@@ -124,8 +138,3 @@ class QuizQuestion(QuizBook):
         json.dump(jsnData, quizBookFile, indent=2)
         quizBookFile.truncate()
         quizBookFile.close()
-
-
-QuizQuestion("CoverGroup", "Kusdda", ["Kusd1a", "Subarash4i", "Kus5o"], 0)
-QuizQuestion("CoverGroup", "peko", ["opek", "eokp", "kope"], 0)
-print(QuizBook("CoverGroup", False).AllQuestions())
