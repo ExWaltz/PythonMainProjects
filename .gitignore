@@ -1,5 +1,6 @@
 *.quiz
 *.json
 *.todo
+*.log
 test.py
 __pycache__
