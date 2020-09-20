@@ -5,16 +5,25 @@ from pathlib import Path
 
 
 class QuizBook:
+    '''
+        Number 1 of my: Let's make 9 python apps
+        All projects are at https://github.com/ExWaltz/PythonMainProjects
+        title: Title of the quizbook
+        disableRandom: bool; Randomize questions
+        path: Name of file; If None then file name will be the same as the title
+    '''
+    # For performance
     __slots__ = ["title", "disableRandom", "disableRecordTime", "path", "counter"]
 
     def __init__(self, title, disableRandom=True, path=None):
         self.title = str(title).upper()
         self.disableRandom = disableRandom
         self.path = path
-        self.counter = 0
+        self.counter = 0 # For iterator
         self.saveQuizBook()
 
     def saveQuizBook(self):
+        """Save the QuizBook; will not save questions"""
         fileName = self.AddExtention(self.path)
         if not self.path:
             fileName = self.AddExtention(self.title)
@@ -39,14 +48,17 @@ class QuizBook:
         return [jsnQuizBookData, fileName]
 
     def AddExtention(self, path):
+        """Add .quiz extention to filename"""
         if str(path).endswith(".quiz"):
             return Path(path).name
         return f"{path}.quiz"
 
     def fileExists(self, path):
+        """Check if file exist"""
         return os.path.exists(path)
 
     def AllQuestions(self):
+        """ Returns all the questions"""
         fileName = self.AddExtention(self.path)
         if not self.path:
             fileName = self.AddExtention(self.title)
@@ -93,6 +105,7 @@ class QuizBook:
         return nextInfo
 
     def remove(self):
+        """Delete QuizBook"""
         fileName = self.AddExtention(self.path)
         if not self.path:
             fileName = self.AddExtention(self.title)
@@ -101,6 +114,14 @@ class QuizBook:
 
 
 class QuizQuestion(QuizBook):
+    """ Create new questions for quizbook
+        title: title of the Quiz Book
+        questions: question of the quiz
+        choices: must be a list
+        answer: must be int; choices[answer]
+        disableRandom: Set random of Quiz Book
+        path: file name"""
+
     def __init__(self, title, question, choices=None, answer=0, disableRandom=True, path=None):
         super(QuizQuestion, self).__init__(title, disableRandom, path)
         self.question = str(question).upper()
@@ -113,6 +134,7 @@ class QuizQuestion(QuizBook):
         self.saveQuestion()
 
     def saveQuestion(self):
+        """Save Quiz Book and Question"""
         jsnData, fileName = self.saveQuizBook()
         quizBookFile = open(fileName, "r+", encoding="utf-8")
         jsnQuestion = json.dumps(self.question)
@@ -130,6 +152,7 @@ class QuizQuestion(QuizBook):
         quizBookFile.close()
 
     def remove(self):
+        """Delete current question"""
         jsnData, fileName = self.saveQuizBook()
         quizBookFile = open(fileName, "r+", encoding="utf-8")
         del jsnData["Questions"][0][self.question]

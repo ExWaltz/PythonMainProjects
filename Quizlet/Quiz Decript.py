@@ -13,9 +13,8 @@ from pathlib import Path
 
 
 class PythonQuiz:
-    """ Number 1 of my: Let's make 9 python apps
-        All projects are at https://github.com/ExWaltz/PythonMainProjects
-
+    """
+        Decript Check Quiz.py for updated version
         # Future Improvements
             * Make the code more readable
             * Add more documentation
