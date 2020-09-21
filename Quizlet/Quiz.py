@@ -10,7 +10,7 @@ class QuizBook:
         All projects are at https://github.com/ExWaltz/PythonMainProjects
         title: Title of the quizbook
         disableRandom: bool; Randomize questions
-        path: Name of file; If None then file name will be the same as the title
+        path: File name; If None then file name will be the same as the title
     '''
     # For performance
     __slots__ = ["title", "disableRandom", "disableRecordTime", "path", "counter"]
@@ -19,7 +19,7 @@ class QuizBook:
         self.title = str(title).upper()
         self.disableRandom = disableRandom
         self.path = path
-        self.counter = 0 # For iterator
+        self.counter = 0    # For iterator
         self.saveQuizBook()
 
     def saveQuizBook(self):
@@ -45,13 +45,36 @@ class QuizBook:
             quizBookFile.seek(0)
             json.dump(jsnQuizBookData, quizBookFile, indent=2)
             quizBookFile.truncate()
-        return [jsnQuizBookData, fileName]
+        self.recentQuiz(fileName)
+        return jsnQuizBookData, fileName
+
+    def recentQuiz(self, path):
+        isExist = self.fileExists(str(path))
+        fullPath = os.path.realpath(path)
+        fullPath = fullPath.replace("\\", "/")      # Convert path to string friendly
+        if not isExist:
+            try:
+                with open("QuizList.json", "r+", encoding="utf-8") as QuizList:
+                    quizListData = json.load(QuizList)
+                    newData = quizListData["RecentQuiz"].append(fullPath)
+                    removeDuplicates = list(dict.fromkeys(newData))
+                    quizListData["RecentQuiz"] = removeDuplicates
+                    json.dump(quizListData, QuizList, indent=2)
+            except Exception:   # Incase of invalid Quiz Book
+                os.remove(fullPath)
+                self.recentQuiz(path)
+                raise Exception("Corrupt QuizList.json. Making a new Json...")
+        else:
+            with open("QuizList.json", "w", encoding="utf-8") as QuizList:
+                quizListData = f'{{"RecentQuiz": ["{fullPath}"]}}'      # Json format
+                jsnquizData = json.loads(quizListData)
+                json.dump(jsnquizData, QuizList, indent=2)
 
     def AddExtention(self, path):
         """Add .quiz extention to filename"""
         if str(path).endswith(".quiz"):
-            return Path(path).name
-        return f"{path}.quiz"
+            return Path(path).name      # Return filename
+        return f"{path}.quiz"           # Return filename with extention
 
     def fileExists(self, path):
         """Check if file exist"""
@@ -64,8 +87,10 @@ class QuizBook:
             fileName = self.AddExtention(self.title)
         quizBookFile = open(fileName, "r", encoding="utf-8")
         jsnQuizBookData = json.load(quizBookFile)
+        quizBookFile.close()
         try:
             questions = jsnQuizBookData["Questions"][0]
+            # Randomize Questions
             if not self.disableRandom:
                 keys = list(questions.keys())
                 random.shuffle(keys)
@@ -75,7 +100,7 @@ class QuizBook:
                 questions = randomizedQuestions
             return questions
         except Exception:
-            return {}
+            return {}   # Empty Quiz Book
 
     def __len__(self):
         fileName = self.AddExtention(self.path)
@@ -90,7 +115,7 @@ class QuizBook:
                 count += 1
             return count
         except Exception:
-            return 0
+            return 0    # Empty Quiz Book
 
     def __iter__(self):
         return self
@@ -119,8 +144,8 @@ class QuizQuestion(QuizBook):
         questions: question of the quiz
         choices: must be a list
         answer: must be int; choices[answer]
-        disableRandom: Set random of Quiz Book
-        path: file name"""
+        disableRandom: bool; Randomize questions
+        path: File name; If None then file name will be the same as the title"""
 
     def __init__(self, title, question, choices=None, answer=0, disableRandom=True, path=None):
         super(QuizQuestion, self).__init__(title, disableRandom, path)
