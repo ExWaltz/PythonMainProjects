@@ -1,5 +1,7 @@
+import json
 import tkinter as tk
 from tkinter import ttk
+from pathlib import Path
 from Quiz import QuizBook, QuizQuestion
 
 
@@ -43,6 +45,12 @@ class App():
         settingsButton.pack(side="left", fill="both", expand=1)
 
     def QuizBooks(self, contentFrame):
+        self._updateContents()
+
+    def _updateContents(self):
+        contents = QuizBook("Covergroup").getRecent()
+        filename = [Path(f).stem for f in contents]
+        print(filename)
 
     def content(self, parent, title):
         contents = tk.Frame(contentFrame)

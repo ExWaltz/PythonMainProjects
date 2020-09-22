@@ -27,7 +27,7 @@ class QuizBook:
         fileName = self.AddExtention(self.path)
         if not self.path:
             fileName = self.AddExtention(self.title)
-        isExist = self.fileExists(fileName)
+        isExist = os.path.exists(fileName)
         jsnDisableRandom = json.dumps(self.disableRandom)
         if not isExist:
             quizBookFile = open(fileName, "w", encoding="utf-8")
@@ -45,40 +45,51 @@ class QuizBook:
             quizBookFile.seek(0)
             json.dump(jsnQuizBookData, quizBookFile, indent=2)
             quizBookFile.truncate()
-        self.recentQuiz(fileName)
+        self.addRecentQuiz(fileName)
         return jsnQuizBookData, fileName
 
-    def recentQuiz(self, path):
-        isExist = self.fileExists(str(path))
-        fullPath = os.path.realpath(path)
+    @classmethod
+    def addRecentQuiz(cls, path=None):
+        isExist = os.path.exists("QuizList.json")
+        fullPath = os.path.realpath(str(path))
         fullPath = fullPath.replace("\\", "/")      # Convert path to string friendly
-        if not isExist:
+        if isExist:
             try:
                 with open("QuizList.json", "r+", encoding="utf-8") as QuizList:
-                    quizListData = json.load(QuizList)
-                    newData = quizListData["RecentQuiz"].append(fullPath)
-                    removeDuplicates = list(dict.fromkeys(newData))
-                    quizListData["RecentQuiz"] = removeDuplicates
-                    json.dump(quizListData, QuizList, indent=2)
+                    jsnquizData = json.load(QuizList)
+                    jsnquizData["RecentQuiz"].append(str(fullPath))
+                    removeDuplicates = list(dict.fromkeys(jsnquizData["RecentQuiz"]))
+                    jsnquizData["RecentQuiz"] = removeDuplicates
+                    QuizList.seek(0)
+                    json.dump(jsnquizData, QuizList, indent=2)
+                    QuizList.truncate()
             except Exception:   # Incase of invalid Quiz Book
-                os.remove(fullPath)
-                self.recentQuiz(path)
-                raise Exception("Corrupt QuizList.json. Making a new Json...")
+                with open("QuizList.json", "w", encoding="utf-8") as QuizList:
+                    quizListData = f'{{"RecentQuiz": []}}'
+                    jsnquizData = json.loads(quizListData)
+                    json.dump(jsnquizData, QuizList, indent=2)
         else:
             with open("QuizList.json", "w", encoding="utf-8") as QuizList:
                 quizListData = f'{{"RecentQuiz": ["{fullPath}"]}}'      # Json format
+                if path is None:
+                    quizListData = f'{{"RecentQuiz": []}}'
                 jsnquizData = json.loads(quizListData)
                 json.dump(jsnquizData, QuizList, indent=2)
+
+    @classmethod
+    def getRecent(cls):
+        try:
+            with open("QuizList.json", "r+", encoding="utf-8") as quizListJsn:
+                jsnquizData = json.load(quizListJsn)
+                return jsnquizData["RecentQuiz"]
+        except Exception:
+            cls.addRecentQuiz()
 
     def AddExtention(self, path):
         """Add .quiz extention to filename"""
         if str(path).endswith(".quiz"):
             return Path(path).name      # Return filename
         return f"{path}.quiz"           # Return filename with extention
-
-    def fileExists(self, path):
-        """Check if file exist"""
-        return os.path.exists(path)
 
     def AllQuestions(self):
         """ Returns all the questions"""
