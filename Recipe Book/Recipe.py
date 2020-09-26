@@ -3,8 +3,9 @@
 class Recipe:
     """ title: Title of recipe
         ingredients: Must be LIST; ingredients of recipe
-        time: Must be LIST; format:[0,1,30]; (1 minute and 30 seconds)
+        time: Must be LIST; format:[1,20,30]; (1 hour, 20 minutes and 30 seconds)
             * wiil override hour,minute and second
+        day: days to finish the recipe
         hour: hours to finish the recipe
         minute: minutes to finish the recipe
         second: seconds to finish the recipe
@@ -14,10 +15,11 @@ class Recipe:
         utensils: Must be List; ["Pot", "frying pan", "timer", "ladle", "ect"]
         serving: Int; recommended amout of people for eating"""
 
-    def __init__(self, title, ingredients=None, time=None, hour=0, minute=0, second=0, temperature=100, instructions=None, utensils=None, serving=1):
+    def __init__(self, title, ingredients=None, time=None, day=0, hour=0, minute=0, second=0, temperature=100, instructions=None, utensils=None, serving=1):
         self.title = str(title)
         self.ingredients = ingredients
         self.time = time
+        self.day = int(day)
         self.hour = int(hour)
         self.minute = int(minute)
         self.second = int(second)
@@ -40,7 +42,6 @@ class Recipe:
 
         if self.time is not None:
             self.hour, self.minute, self.second = [int(tm) for tm in self.time]
-            self.day = 0
             while self.hour > 24 or self.minute >= 60 or self.second >= 60:
                 if self.hour > 24:
                     self.day += 1
@@ -70,6 +71,8 @@ class Recipe:
     def getTime(self):
         self.updateMutableParam()
         rTime = ""
+        if self.day != 0:
+            rTime += f"{self.day} day(s)\t"
         if self.hour != 0:
             rTime += f"{self.hour:02d}:"
         if self.minute != 0:
@@ -80,7 +83,7 @@ class Recipe:
 
     def __str__(self):
         instruct = '\n\t* ' + '\n\t* '.join(self.instructions)
-        recipeStr = f"Title:\t\t\t{self.title}\nIngredients:\t{', '.join(self.ingredients)}\nTime:\t\t\t{self.getTime()}\nServing:\t\t{self.serving}\nTemperature:\t{self.temperature}C\nUtensils:\t\t{''.join(self.utensils)}\nInstructions:\t{instruct}"
+        recipeStr = f"Title:\t\t\t{self.title}\nIngredients:\t{', '.join(self.ingredients)}\nTime:\t\t\t{self.getTime()}\nServing:\t\t{self.serving}\nTemperature:\t{self.temperature}C\nUtensils:\t\t{', '.join(self.utensils)}\nInstructions:\t{instruct}"
         return recipeStr
 
     def __repr__(self):
