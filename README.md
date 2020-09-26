@@ -8,7 +8,7 @@ Complete 12 Python Projects
 - [ ] Weather app
 - [ ] Converter app
 - [X] Timer
-- [ ] File Explorer
+- [X] File Explorer
 - [ ] Image Viewer
 - [ ] Music Player
 - [ ] Alarm Clock
