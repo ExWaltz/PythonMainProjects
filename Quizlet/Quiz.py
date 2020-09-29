@@ -15,7 +15,7 @@ class QuizBook:
     # For performance
     __slots__ = ["title", "disableRandom", "disableRecordTime", "path", "counter"]
 
-    def __init__(self, title, disableRandom=True, path=None):
+    def __init__(self, title, disableRandom=None, path=None):
         self.title = str(title).upper().replace(".QUIZ", "")
         self.disableRandom = disableRandom
         self.path = path
@@ -28,6 +28,9 @@ class QuizBook:
         if not self.path:
             fileName = self.AddExtention(self.title)
         isExist = os.path.exists(fileName)
+        isnew = False
+        if self.disableRandom is not None:
+            isnew = True
         jsnDisableRandom = json.dumps(self.disableRandom)
         if not isExist:
             quizBookFile = open(fileName, "w", encoding="utf-8")
@@ -41,7 +44,8 @@ class QuizBook:
             quizBookFile = open(fileName, "r+", encoding="utf-8")
             jsnQuizBookData = json.load(quizBookFile)
             jsnQuizBookData["Title"] = self.title
-            jsnQuizBookData["disableRandom"] = jsnDisableRandom
+            if isnew:
+                jsnQuizBookData["disableRandom"] = jsnDisableRandom
             quizBookFile.seek(0)
             json.dump(jsnQuizBookData, quizBookFile, indent=2)
             quizBookFile.truncate()
@@ -157,8 +161,9 @@ class QuizQuestion(QuizBook):
         answer: must be int; choices[answer]
         disableRandom: bool; Randomize questions
         path: File name; If None then file name will be the same as the title"""
+    __slots__ = ["question", "choices", "answer", "path"]
 
-    def __init__(self, title, question, choices=None, answer=0, disableRandom=True, path=None):
+    def __init__(self, title, question, choices=None, answer=0, disableRandom=None, path=None):
         super(QuizQuestion, self).__init__(title, disableRandom, path)
         self.question = str(question).upper()
         self.choices = choices
