@@ -16,7 +16,7 @@ class QuizBook:
     __slots__ = ["title", "disableRandom", "disableRecordTime", "path", "counter"]
 
     def __init__(self, title, disableRandom=True, path=None):
-        self.title = str(title).upper()
+        self.title = str(title).upper().replace(".QUIZ", "")
         self.disableRandom = disableRandom
         self.path = path
         self.counter = 0    # For iterator
@@ -87,7 +87,7 @@ class QuizBook:
 
     def AddExtention(self, path):
         """Add .quiz extention to filename"""
-        if str(path).endswith(".quiz"):
+        if str(path).lower().endswith(".quiz"):
             return Path(path).name      # Return filename
         return f"{path}.quiz"           # Return filename with extention
 
