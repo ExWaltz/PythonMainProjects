@@ -9,6 +9,7 @@ class App():
         self.master = master
         self.main_font = "Bahnschrift"
         self.symbol = "Wingdings 3"
+        # [Base, Highlight, Shadow]
         self.header_bg = ["#101820", "#000810", "#202830"]
         self.body_bg = ["#f2aa4c", "#e28a3c", "#ffba5c"]
         self.accent_bg = ["#302daf", "#201d8f", "#403dbf"]
@@ -98,10 +99,8 @@ class App():
 
         start_button = tk.Label(quiz_book_frame, text="Start Quiz", font=(self.main_font, 30, "bold"), fg=self.header_bg[0], bg=self.body_bg[0])
         start_button.pack(side="bottom", fill="x")
-        start_button.bind("<Enter>", lambda e: self._change_color(e, self.body_bg[2]))
-        start_button.bind("<Button-1>", lambda e: self._press_content(e, lambda: self.start_quiz(quizbook), bg=self.body_bg[1]))
-        start_button.bind("<ButtonRelease-1>", lambda e: self._change_color(e, self.body_bg[0]))
-        start_button.bind("<Leave>", lambda e: self._change_color(e, self.body_bg[0]))
+
+        start_button = self._bind_label(start_button, self.body_bg, lambda: self.start_quiz(quizbook))
 
     def start_quiz(self, quizbook):
         questions = quizbook.AllQuestions()
@@ -115,40 +114,81 @@ class App():
         hold_question.pack(fill="both", expand=1)
         hold_choices.pack(fill="both")
         self.master.update_idletasks()
+        question_label = tk.Label(hold_question, bg=self.header_bg[0], fg=self.body_bg[0], font=(self.main_font, 30, "bold"))
+        question_label.pack(side="top", expand=1, fill="both")
+        score = 0
         for key, val in questions.items():
-            question_label = tk.Label(hold_question, text=str(key), bg=self.header_bg[0], fg=self.body_bg[0], font=(self.main_font, 30, "bold"))
-            question_label.pack(side="top", expand=1, fill="both")
+            question_label.config(text=str(key))
             choices = val[0]["choices"]
-            answer = val[0]["answerIndex"]
+            choices = [str(c) for c in choices]
+            answerIndex = val[0]["answerIndex"]
+            answer = choices[answerIndex]
+            choice_frame = {}
+            self.iscorrect = None
             x = 0
             for y, choice in enumerate(choices):
-                self._generate_choices(hold_choices, choice, answer, x, y % 2)
+                h_frame, r_choice = self._generate_choices(hold_choices, choice, answer, x, y % 2)
+                choice_frame[r_choice] = h_frame
                 if y % 2 == 1:
                     x += 1
+            addScore = True
+            while True:
+                if self.iscorrect is True:
+                    if addScore is True:
+                        score += 1
+                    [f.destroy() for f in choice_frame.values()]
+                    break
+                elif self.iscorrect is False:
+                    addScore = False
+                    for ck, cv in choice_frame.items():
+                        if ck != answer:
+                            cv.destroy()
+                        else:
+                            cv.grid_forget()
+                            cv.grid(row=0, column=0, columnspan=2, sticky="nsew")
+                self.master.update_idletasks()
+                self.master.update()
+        question_label.config(text=f"Score:\t{score}")
+        reset_button = tk.Label(hold_choices, bg=self.body_bg[0], text="Go Back", font=(self.main_font, 20), height=2, width=10)
+        reset_button.pack(side="top", fill="both", expand=1)
+        reset_button = self._bind_label(reset_button, self.body_bg, lambda: self._go_quiz_book(quizbook))
 
-            break
+    def _bind_label(self, label, color, command):
+        label.bind("<Enter>", lambda e: self._change_color(e, color[2]))
+        label.bind("<Button-1>", lambda e: self._press_content(e, command, bg=color[1]))
+        label.bind("<ButtonRelease-1>", lambda e: self._change_color(e, color[2]))
+        label.bind("<Leave>", lambda e: self._change_color(e, color[0]))
+        return label
 
     def _generate_choices(self, parent, choice, answer, x, y):
         hold_choice = tk.Frame(parent, bg=self.body_bg[0])
         choice_shadow_side = tk.Frame(hold_choice, bg=self.header_bg[0])
         choice_shadow_side.pack(side="right", fill="y")
+
         if y == 0:
             choice_shadow_side = tk.Frame(hold_choice, bg=self.header_bg[0])
             choice_shadow_side.pack(side="left", fill="y")
+
         choice_name = tk.Label(hold_choice, bg=self.body_bg[0], text=choice, font=(self.main_font, 20), height=2, width=10)
         choice_name.pack(side="top", fill="both", expand=1)
+
         choice_shadow = tk.Frame(hold_choice, bg=self.header_bg[0])
         choice_shadow.pack(side="bottom", expand=1, fill="x")
-        choice_name.bind("<Enter>", lambda e: self._change_color(e, self.body_bg[2]))
-        choice_name.bind("<Button-1>", lambda e: self._press_content(e, bg=self.body_bg[1]))
-        choice_name.bind("<ButtonRelease-1>", lambda e: self._change_color(e, self.body_bg[0]))
-        choice_name.bind("<Leave>", lambda e: self._change_color(e, self.body_bg[0]))
+
+        choice_name = self._bind_label(choice_name, self.body_bg, lambda: self._answer(choice, answer))
+
         parent.rowconfigure(x, weight=1)
         parent.columnconfigure(y, weight=1)
         hold_choice.grid(row=x, column=y, sticky=tk.NSEW)
         self.master.update_idletasks()
         self.master.update()
-        return hold_choice
+        return hold_choice, choice
+
+    def _answer(self, choice, answer):
+        if choice == answer:
+            self.iscorrect = True
+            return
+        self.iscorrect = False
 
     def _generate_content(self, parent_frame, quizbook):
         content_frame = tk.Frame(parent_frame, bg=self.header_bg[0])
@@ -159,10 +199,8 @@ class App():
 
         content_label = tk.Label(content_frame, fg=self.body_bg[0], text=quizbook.title, font=(self.main_font, 17), bg=self.header_bg[0], height=2, width=37, bd=4)  # Add font
         content_label.pack(side="top", fill="x", expand=1)
-        content_label.bind("<Enter>", lambda e: self._change_color(e, self.header_bg[2]))
-        content_label.bind("<Button-1>", lambda e: self._press_content(e, lambda: self.open_quiz_book(quizbook), bg=self.header_bg[1]))  # Add OpenQuizFunc
-        content_label.bind("<ButtonRelease-1>", lambda e: self._change_color(e, self.header_bg[0]))
-        content_label.bind("<Leave>", lambda e: self._change_color(e, self.header_bg[0]))
+
+        content_label = self._bind_label(content_label, self.header_bg, lambda: self.open_quiz_book(quizbook))
         self.master.update_idletasks()
         self.master.update()
 
@@ -172,10 +210,7 @@ class App():
 
         header_content_button = tk.Label(header_content_frame, text=title, fg=self.body_bg[0], bg=self.header_bg[0], font=(self.main_font, 17, "bold"))
         header_content_button.pack(side="top", fill="x", expand=1)
-        header_content_button.bind("<Enter>", lambda e: self._change_color(e, self.header_bg[2]))
-        header_content_button.bind("<Button-1>", lambda e: self._press_content(e, command, bg=self.header_bg[1]))
-        header_content_button.bind("<ButtonRelease-1>", lambda e: self._change_color(e, self.header_bg[0]))
-        header_content_button.bind("<Leave>", lambda e: self._change_color(e, self.header_bg[0]))
+        header_content_button = self._bind_label(header_content_button, self.header_bg, command)
 
         header_content_shadow = tk.Frame(header_content_frame, bg=self.body_bg[0], height=1)
         header_content_shadow.pack(side="bottom", fill="x")
@@ -188,14 +223,20 @@ class App():
         for indicater in self.header_indicator:
             indicater.config(bg=self.header_bg[0])
 
+    def _go_quiz_book(self, quizbook):
+        self._disable_all_frames()
+        self.open_quiz_book(quizbook)
+
     def _go_contents(self):
-        if "quiz_book_border" in self.__dict__:
-            self.quiz_book_border.destroy()
+        self._disable_all_frames()
         self.canvas_frame.pack(side="top", fill="both", expand=1)
+        self.header_title.config(text="Python Quiz")
 
     def _disable_all_frames(self):
-        self.header.destroy()
-        self.body.destroy()
+        if "quiz_book_border" in self.__dict__:
+            self.quiz_book_border.destroy()
+        if "question_frame" in self.__dict__:
+            self.question_frame.destroy()
 
     def resize(self, event):
         self.body_canvas.itemconfig(self.item, width=event.width)
