@@ -171,7 +171,7 @@ class QuizQuestion(QuizBook):
         self.path = path
 
         if choices is None:
-            self.choices = []
+            self.choices = [False, True]
         self.saveQuestion()
 
     def saveQuestion(self):
