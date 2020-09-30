@@ -6,7 +6,7 @@ from pathlib import Path
 
 class QuizBook:
     '''
-        Number 1 of my: Let's make 9 python apps
+        Number 1 of my: Let's make 12 python apps
         All projects are at https://github.com/ExWaltz/PythonMainProjects
         title: Title of the quizbook
         disableRandom: bool; Randomize questions
