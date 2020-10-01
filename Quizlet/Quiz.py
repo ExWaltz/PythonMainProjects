@@ -152,6 +152,18 @@ class QuizBook:
         filePath = os.path.realpath(fileName)
         os.remove(filePath)
 
+    @classmethod
+    def isValid(cls, path=None):
+        try:
+            qbFile = open(path, "r", encoding="utf-8")
+            jsnFile = json.load(qbFile)
+            jsnFile["Title"]
+            jsnFile["disableRandom"]
+            return True
+        except Exception:
+            raise Exception
+            return False
+
 
 class QuizQuestion(QuizBook):
     """ Create new questions for quizbook

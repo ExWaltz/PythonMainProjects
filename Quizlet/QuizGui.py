@@ -16,9 +16,9 @@ class App():
         self.header_bg = ["#101820", "#000810", "#202830"]
         self.body_bg = ["#f2aa4c", "#e28a3c", "#ffba5c"]
         self.accent_bg = ["#302daf", "#201d8f", "#403dbf"]
-        self.Overlay()
+        self.overlay()
 
-    def Overlay(self):
+    def overlay(self):
         # Divide the app into header and body
         self.header = tk.Frame(self.master, bg=self.header_bg[0], height=50)
         self.header.pack(side="top", fill="x")
@@ -44,7 +44,7 @@ class App():
 
         # {Name: Function}
         header_button_names = {"Contents": self._go_contents,
-                               "Add": None,
+                               "Add": self._go_add,
                                "Settings": None}
         self.header_indicator = []  # Indicate which button is active
         for key, val in header_button_names.items():
@@ -170,11 +170,10 @@ class App():
 
         start_button = self._bind_label(start_button,
                                         self.body_bg,
-                                        lambda: self.start_quiz(quizbook))  # Add button properties in start_button
+                                        lambda: self._go_start_quiz(quizbook))  # Add button properties in start_button
 
     def start_quiz(self, quizbook):
         questions = quizbook.AllQuestions()     # Get all the questions in the quizbook
-        self.quiz_book_border.destroy()     # destroy quiz info
         self.question_frame = tk.Frame(self.body_frame,
                                        bg=self.header_bg[0])    # Frame holder for quizzes
         question_border = tk.Frame(self.question_frame,
@@ -262,6 +261,13 @@ class App():
                                         self.body_bg,
                                         lambda: self._go_quiz_book(quizbook))
 
+    def add_quiz_book(self):
+        self.canvas_frame.forget()
+        self.add_quiz_frame = tk.Frame(self.body_frame,
+                                       bg=self.body_bg[0])
+        self.add_quiz_frame.pack(fill="both",
+                                 expand=1)
+
     def _bind_label(self, label, color, command):
         # Button properties
         label.bind("<Enter>", lambda e: self._change_color(e, color[2]))    # when mouse is over widget
@@ -348,7 +354,7 @@ class App():
 
         content_label = self._bind_label(content_label,
                                          self.header_bg,
-                                         lambda: self.open_quiz_book(quizbook))     # Add button properties
+                                         lambda: self._go_quiz_book(quizbook))     # Add button properties
         self.master.update_idletasks()
         self.master.update()
 
@@ -391,16 +397,30 @@ class App():
         for indicater in self.header_indicator:
             indicater.config(bg=self.header_bg[0])
 
-    def _go_quiz_book(self, quizbook):
-        # Open Quiz Book
+    def _on_header(self, index):
+        self._disable_all_indicator()
+        self.header_indicator[index].config(bg=self.body_bg[0])
+
+    def _go_add(self):
         self._disable_all_frames()
+        self._on_header(1)
+        self.add_quiz_book()
+
+    def _go_start_quiz(self, quizbook):
+        self._disable_all_frames()
+        self._on_header(1)
+        self.start_quiz(quizbook)
+
+    def _go_quiz_book(self, quizbook):
+        # Open Quiz Book Wrapper
+        self._disable_all_frames()
+        self._on_header(0)
         self.open_quiz_book(quizbook)
 
     def _go_contents(self):
         # Go back to Quiz Book List (startup page)
         self._disable_all_frames()
-        self._disable_all_indicator()
-        self.header_indicator[0].config(bg=self.body_bg[0])
+        self._on_header(0)
         self.canvas_frame.pack(side="top", fill="both", expand=1)
         self.header_title.config(text="Python Quiz")
 
@@ -410,6 +430,9 @@ class App():
             self.quiz_book_border.destroy()
         if "question_frame" in self.__dict__:
             self.question_frame.destroy()
+        if "add_quiz_frame" in self.__dict__:
+            self.add_quiz_frame.destroy()
+        self.master.update_idletasks()
 
     def resize(self, event):
         # resize Quiz Book List to fit the screen
