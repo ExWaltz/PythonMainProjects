@@ -161,7 +161,6 @@ class QuizBook:
             jsnFile["disableRandom"]
             return True
         except Exception:
-            raise Exception
             return False
 
 
