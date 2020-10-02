@@ -157,20 +157,14 @@ class App():
                             expand=1,
                             fill="both",
                             pady=10)
-
-        start_button = tk.Label(quiz_book_frame,
-                                text="Start Quiz",
-                                font=(self.main_font,
-                                      30,
-                                      "bold"),
-                                fg=self.header_bg[0],
-                                bg=self.body_bg[0])     # Make the start button
-        start_button.pack(side="bottom",
-                          fill="x")
-
-        start_button = self._bind_label(start_button,
-                                        self.body_bg,
-                                        lambda: self._go_start_quiz(quizbook))  # Add button properties in start_button
+        self._label_button(quiz_book_frame,
+                           text="Start Quiz",
+                           font=(self.main_font, 30, "bold"),
+                           fg=self.header_bg,
+                           bg=self.body_bg,
+                           side="bottom",
+                           fill="x",
+                           func=lambda: self._go_start_quiz(quizbook))
 
     def start_quiz(self, quizbook):
         questions = quizbook.AllQuestions()     # Get all the questions in the quizbook
@@ -246,70 +240,47 @@ class App():
                 self.master.update()
                 # next quiz
         # End of quiz
-        question_label.config(text=f"Score:\t{score}")
-        reset_button = tk.Label(hold_choices,
-                                bg=self.body_bg[0],
-                                text="Go Back",
-                                font=(self.main_font, 20),
-                                height=2,
-                                width=10)   # Go to Quiz Info
-        reset_button.pack(side="top",
-                          fill="both",
-                          expand=1)
-        # add button properties to reset_button
-        reset_button = self._bind_label(reset_button,
-                                        self.body_bg,
-                                        lambda: self._go_quiz_book(quizbook))
+        self._label_button(hold_choices,
+                           bg=self.body_bg,
+                           text="Go Back",
+                           font=(self.main_font, 20),
+                           height=2,
+                           width=10,
+                           side="top",
+                           fill="both",
+                           expand=1,
+                           func=lambda: self._go_quiz_book(quizbook))
 
     def add_quiz_book(self):
         self.canvas_frame.forget()
         self.add_quiz_frame = tk.Frame(self.body_frame,
-                                       bg=self.body_bg[0])
+                                       bg=self.header_bg[0])
         self.add_quiz_frame.pack(fill="both",
                                  expand=1)
-
-    def _bind_label(self, label, color, command):
-        # Button properties
-        label.bind("<Enter>", lambda e: self._change_color(e, color[2]))    # when mouse is over widget
-        label.bind("<Button-1>", lambda e: self._press_content(e, command, bg=color[1]))    # when widget is clicked
-        label.bind("<ButtonRelease-1>", lambda e: self._change_color(e, color[2]))  # when mouse button is released
-        label.bind("<Leave>", lambda e: self._change_color(e, color[0]))    # when mouse is not on widget
-        return label
+        open_file_frame = tk.Frame(self.add_quiz_frame, bd=3, bg=self.header_bg[0])
+        open_file_frame.pack(fill="x")
 
     def _generate_choices(self, parent, choice, answer, x, y):
         # Make and display choices
-        hold_choice = tk.Frame(parent,
-                               bg=self.body_bg[0])  # hold choices
-        choice_shadow_side = tk.Frame(hold_choice,
-                                      bg=self.header_bg[0])     # shadow effect
-        choice_shadow_side.pack(side="right",
-                                fill="y")
+        hold_choice = tk.Frame(parent, bg=self.body_bg[0])  # hold choices
+
+        self._shadow_effect(hold_choice, self.header_bg[0], side="right", fill="y")
 
         if y == 0:
-            choice_shadow_side = tk.Frame(hold_choice,
-                                          bg=self.header_bg[0])     # shadow effect if column is 0
-            choice_shadow_side.pack(side="left",
-                                    fill="y")
+            self._shadow_effect(hold_choice, self.header_bg[0], side="left", fill="y")
 
-        choice_name = tk.Label(hold_choice,
-                               bg=self.body_bg[0],
-                               text=choice,
-                               font=(self.main_font, 20),
-                               height=2,
-                               width=10)    # Make choice button
-        choice_name.pack(side="top",
-                         fill="both",
-                         expand=1)
-
-        choice_shadow = tk.Frame(hold_choice,
-                                 bg=self.header_bg[0])      # Shadow effect
-        choice_shadow.pack(side="bottom",
+        self._label_button(hold_choice,
+                           bg=self.body_bg,
+                           text=choice,
+                           font=(self.main_font, 20),
+                           height=2,
+                           width=10,
+                           side="top",
+                           fill="both",
                            expand=1,
-                           fill="x")
+                           func=lambda: self._answer(choice, answer))
 
-        choice_name = self._bind_label(choice_name,
-                                       self.body_bg,
-                                       lambda: self._answer(choice, answer))    # add button properties to choice_name
+        self._shadow_effect(hold_choice, self.header_bg[0], expand=1)
 
         parent.rowconfigure(x, weight=1)        # Make row expandable
         parent.columnconfigure(y, weight=1)     # Make column expandable
@@ -334,27 +305,19 @@ class App():
         content_frame.pack(side="top",
                            fill="x")
 
-        content_shadow = tk.Frame(content_frame,
-                                  bg=self.body_bg[0],
-                                  height=1)     # shadow effect
-        content_shadow.pack(side="bottom",
-                            fill="x")
-
-        content_label = tk.Label(content_frame,
-                                 fg=self.body_bg[0],
-                                 text=quizbook.title,
-                                 font=(self.main_font, 17),
-                                 bg=self.header_bg[0],
-                                 height=2,
-                                 width=37,
-                                 bd=4)  # Quiz Book button
-        content_label.pack(side="top",
+        self._shadow_effect(content_frame, self.body_bg[0])
+        self._label_button(content_frame,
+                           fg=self.body_bg,
+                           text=quizbook.title,
+                           font=(self.main_font, 17),
+                           bg=self.header_bg,
+                           height=2,
+                           width=37,
+                           bd=4,
+                           side="top",
                            fill="x",
-                           expand=1)
-
-        content_label = self._bind_label(content_label,
-                                         self.header_bg,
-                                         lambda: self._go_quiz_book(quizbook))     # Add button properties
+                           expand=1,
+                           func=lambda: self._go_quiz_book(quizbook))
         self.master.update_idletasks()
         self.master.update()
 
@@ -365,32 +328,45 @@ class App():
         header_content_frame.pack(side="left",
                                   fill="x",
                                   expand=1)
-
-        header_content_button = tk.Label(header_content_frame,
-                                         text=title,
-                                         fg=self.body_bg[0],
-                                         bg=self.header_bg[0],
-                                         font=(self.main_font, 17, "bold"))     # header button
-        header_content_button.pack(side="top",
-                                   fill="x",
-                                   expand=1)
-        header_content_button = self._bind_label(header_content_button,
-                                                 self.header_bg,
-                                                 command)       # add button properties to header button
-
-        header_content_shadow = tk.Frame(header_content_frame,
-                                         bg=self.body_bg[0],
-                                         height=1)      # Shadow effects
-        header_content_shadow.pack(side="bottom",
-                                   fill="x")
-        header_content_indicator = tk.Frame(header_content_frame,
-                                            height=2,
-                                            bg=self.body_bg[0])     # Indicator effect
-        header_content_indicator.pack(side="bottom",
-                                      fill="x",
-                                      expand=1)
+        self._label_button(header_content_frame,
+                           text=title,
+                           fg=self.body_bg,
+                           bg=self.header_bg,
+                           font=(self.main_font, 17, "bold"),
+                           side="top",
+                           fill="x",
+                           expand=1,
+                           func=command)
+        self._shadow_effect(header_content_frame, self.body_bg[0])
+        header_content_indicator = self._shadow_effect(header_content_frame, self.body_bg[0], 2, expand=1)
 
         return header_content_indicator
+
+    def _label_button(self, parent, **kwarg):
+        label_button = tk.Label(parent,
+                                fg=kwarg.get("fg", ["#000000"])[0],
+                                bg=kwarg.get("bg", ["#ffffff"])[0],
+                                text=kwarg.get("text", " "),
+                                font=kwarg.get("font", ("Century Gothic", 12)),
+                                height=kwarg.get("height", 1),
+                                width=kwarg.get("width", 1),
+                                bd=kwarg.get("bd", 1))
+        label_button.pack(side=kwarg.get("side", "top"), fill=kwarg.get("fill", "both"), expand=kwarg.get("expand", 0))
+        label_button = self._button_properties(label_button, kwarg.get("bg", ["#2e2e2e", "#6a6a6a", "#161616"]), kwarg.get("func", None))
+        return label_button
+
+    def _button_properties(self, label, color, command):
+        # Button properties
+        label.bind("<Enter>", lambda e: self._change_color(e, color[2]))    # when mouse is over widget
+        label.bind("<Button-1>", lambda e: self._press_content(e, command, bg=color[1]))    # when widget is clicked
+        label.bind("<ButtonRelease-1>", lambda e: self._change_color(e, color[2]))  # when mouse button is released
+        label.bind("<Leave>", lambda e: self._change_color(e, color[0]))    # when mouse is not on widget
+        return label
+
+    def _shadow_effect(self, parent, color, height=1, fill="x", side="bottom", expand=0):
+        shadow_effect = tk.Frame(parent, bg=color, height=height)      # Shadow effects
+        shadow_effect.pack(side=side, fill=fill, expand=expand)
+        return shadow_effect
 
     def _disable_all_indicator(self):
         # disable all header indicator
