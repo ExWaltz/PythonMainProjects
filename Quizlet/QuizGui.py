@@ -1,4 +1,8 @@
 import tkinter as tk
+import os
+import sys
+from tkinter import filedialog
+from tkinter import messagebox
 from pathlib import Path
 from Quiz import QuizBook, QuizQuestion
 
@@ -13,9 +17,8 @@ class App():
         self.master = master
         self.main_font = "Bahnschrift"
         # [Base, Highlight, Shadow]
-        self.header_bg = ["#101820", "#000810", "#202830"]
-        self.body_bg = ["#f2aa4c", "#e28a3c", "#ffba5c"]
-        self.accent_bg = ["#302daf", "#201d8f", "#403dbf"]
+        self.header_bg = ("#101820", "#000810", "#202830")
+        self.body_bg = ("#f2aa4c", "#e28a3c", "#ffba5c")
         self.overlay()
 
     def overlay(self):
@@ -176,7 +179,7 @@ class App():
         hold_question = tk.Frame(question_border,
                                  bg=self.header_bg[0])  # question frame
         hold_choices = tk.Frame(question_border,
-                                bg=self.header_bg[2])   # choices frame
+                                bg=self.header_bg[0])   # choices frame
         # Display Widgets
         self.question_frame.pack(side="top",
                                  fill="both",
@@ -229,18 +232,27 @@ class App():
                     addScore = False    # incorrect answer
                     for ck, cv in choice_frame.items():
                         if ck != answer:
-                            cv.destroy()    # destroy all wrong answer
+                            # cv.destroy()    # destroy all wrong answer
+                            label = cv.children["!label"]
+                            label.unbind("<Enter>")
+                            label.unbind("<Button-1>")
+                            label.unbind("<ButtonRelease-1>")
+                            label.unbind("<Leave>")
+                            label.config(bg=self.header_bg[0])
                         else:
-                            cv.grid_forget()    # Reset grid settings
-                            cv.grid(row=0,
-                                    column=0,
-                                    columnspan=2,
-                                    sticky="nsew")
+                            # cv.grid_forget()    # Reset grid settings
+                            # cv.grid(row=0,
+                            #         column=0,
+                            #         columnspan=2,
+                            #         sticky="nsew")
+                            pass
                 self.master.update_idletasks()
                 self.master.update()
                 # next quiz
         # End of quiz
+        question_label.config(text=f"Total Score:\t{score}")
         self._label_button(hold_choices,
+                           fg=self.header_bg,
                            bg=self.body_bg,
                            text="Go Back",
                            font=(self.main_font, 20),
@@ -257,19 +269,48 @@ class App():
                                        bg=self.header_bg[0])
         self.add_quiz_frame.pack(fill="both",
                                  expand=1)
-        open_file_frame = tk.Frame(self.add_quiz_frame, bd=3, bg=self.header_bg[0])
+        border_open_file = tk.Frame(self.add_quiz_frame, bg=self.body_bg[0], bd=1)
+        border_open_file.pack(fill="both", pady=5, padx=5)
+        open_file_frame = tk.Frame(border_open_file, bg=self.header_bg[0])
         open_file_frame.pack(fill="x")
+        self._label_button(open_file_frame,
+                           fg=self.body_bg,
+                           bg=self.header_bg,
+                           text="Open File",
+                           font=(self.main_font, 20, "bold"),
+                           height=2,
+                           width=10,
+                           side="top",
+                           fill="both",
+                           expand=1,
+                           func=self._add_quiz_path)
+        self._shadow_effect(self.add_quiz_frame, bg=self.body_bg[0], height=2, side="top", pady=3)
+
+    def _add_quiz_path(self):
+        paths = filedialog.askopenfilenames()
+        file_names = [Path(f).stem for f in paths]
+        for file_name, path in zip(file_names, paths):
+            if QuizBook.isValid(path):
+                QuizBook(file_name, path)
+            else:
+                messagebox.showwarning("Warning", "Invalid Quiz Book")
+                return
+        answer = messagebox.askokcancel("Restart?", "Restart to show new Quiz Book")
+        answer_switch = {True: self._reset_program, False: lambda: None}
+        ans = answer_switch[answer]
+        ans()
 
     def _generate_choices(self, parent, choice, answer, x, y):
         # Make and display choices
         hold_choice = tk.Frame(parent, bg=self.body_bg[0])  # hold choices
 
-        self._shadow_effect(hold_choice, self.header_bg[0], side="right", fill="y")
+        self._shadow_effect(hold_choice, bg=self.header_bg[0], side="right", fill="y")
 
         if y == 0:
-            self._shadow_effect(hold_choice, self.header_bg[0], side="left", fill="y")
+            self._shadow_effect(hold_choice, bg=self.header_bg[0], side="left", fill="y")
 
         self._label_button(hold_choice,
+                           fg=self.header_bg,
                            bg=self.body_bg,
                            text=choice,
                            font=(self.main_font, 20),
@@ -280,7 +321,7 @@ class App():
                            expand=1,
                            func=lambda: self._answer(choice, answer))
 
-        self._shadow_effect(hold_choice, self.header_bg[0], expand=1)
+        self._shadow_effect(hold_choice, bg=self.header_bg[0], expand=1)
 
         parent.rowconfigure(x, weight=1)        # Make row expandable
         parent.columnconfigure(y, weight=1)     # Make column expandable
@@ -305,12 +346,12 @@ class App():
         content_frame.pack(side="top",
                            fill="x")
 
-        self._shadow_effect(content_frame, self.body_bg[0])
+        self._shadow_effect(content_frame, bg=self.body_bg[0])
         self._label_button(content_frame,
                            fg=self.body_bg,
+                           bg=self.header_bg,
                            text=quizbook.title,
                            font=(self.main_font, 17),
-                           bg=self.header_bg,
                            height=2,
                            width=37,
                            bd=4,
@@ -337,22 +378,22 @@ class App():
                            fill="x",
                            expand=1,
                            func=command)
-        self._shadow_effect(header_content_frame, self.body_bg[0])
-        header_content_indicator = self._shadow_effect(header_content_frame, self.body_bg[0], 2, expand=1)
+        self._shadow_effect(header_content_frame, bg=self.body_bg[0])
+        header_content_indicator = self._shadow_effect(header_content_frame, bg=self.body_bg[0], height=2, expand=1)
 
         return header_content_indicator
 
     def _label_button(self, parent, **kwarg):
         label_button = tk.Label(parent,
-                                fg=kwarg.get("fg", ["#000000"])[0],
-                                bg=kwarg.get("bg", ["#ffffff"])[0],
+                                fg=kwarg.get("fg", ("#000000"))[0],
+                                bg=kwarg.get("bg", ("#ffffff"))[0],
                                 text=kwarg.get("text", " "),
                                 font=kwarg.get("font", ("Century Gothic", 12)),
                                 height=kwarg.get("height", 1),
                                 width=kwarg.get("width", 1),
                                 bd=kwarg.get("bd", 1))
         label_button.pack(side=kwarg.get("side", "top"), fill=kwarg.get("fill", "both"), expand=kwarg.get("expand", 0))
-        label_button = self._button_properties(label_button, kwarg.get("bg", ["#2e2e2e", "#6a6a6a", "#161616"]), kwarg.get("func", None))
+        label_button = self._button_properties(label_button, kwarg.get("bg", ("#2e2e2e", "#6a6a6a", "#161616")), kwarg.get("func", None))
         return label_button
 
     def _button_properties(self, label, color, command):
@@ -363,10 +404,21 @@ class App():
         label.bind("<Leave>", lambda e: self._change_color(e, color[0]))    # when mouse is not on widget
         return label
 
-    def _shadow_effect(self, parent, color, height=1, fill="x", side="bottom", expand=0):
-        shadow_effect = tk.Frame(parent, bg=color, height=height)      # Shadow effects
-        shadow_effect.pack(side=side, fill=fill, expand=expand)
+    def _shadow_effect(self, parent, **kwarg):
+        shadow_effect = tk.Frame(parent,
+                                 bg=kwarg.get("bg", "#ffffff"),
+                                 height=kwarg.get("height", 1))      # Shadow effects
+        shadow_effect.pack(side=kwarg.get("side", "bottom"),
+                           fill=kwarg.get("fill", "x"),
+                           expand=kwarg.get("expand", 0),
+                           padx=kwarg.get("padx", 0),
+                           pady=kwarg.get("pady", 0))
         return shadow_effect
+
+    def _reset_program(self):
+        python = sys.executable
+        filePath = (sys.argv[0])
+        os.execl(python, python, f'"{filePath}"')
 
     def _disable_all_indicator(self):
         # disable all header indicator
@@ -384,7 +436,7 @@ class App():
 
     def _go_start_quiz(self, quizbook):
         self._disable_all_frames()
-        self._on_header(1)
+        self._on_header(0)
         self.start_quiz(quizbook)
 
     def _go_quiz_book(self, quizbook):
