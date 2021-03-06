@@ -1,5 +1,4 @@
 import discord
-import commands
 import ytvids
 import os
 import asyncio
@@ -7,6 +6,12 @@ import json
 
 
 client = discord.Client()
+
+with open('config', 'r', encoding='UTF-8') as variables:
+    jsn_variables = json.loads(variables.read())
+    TOKEN = jsn_variables.get('token')
+    YT_CHANNEL = jsn_variables.get('youtubeChannel')
+    DS_CHANNEL = jsn_variables.get('discordChannel')
 
 async def _write_to_file(list_vid, dict_vid, key_vid, val_vid):
     dict_vid[key_vid] = val_vid
@@ -34,24 +39,21 @@ async def _is_data_exist(vid_key, vid_data, file_name):
 
 async def _get_vids():
     while True:
-        yt_channel = "https://www.youtube.com/channel/UCp6993wxpyDPHUpavwDFqgg"
-        if str(yt_channel).endswith("/"): yt_channel = yt_channel[:-1]
+        if str(YT_CHANNEL).endswith("/"): YT_CHANNEL = YT_CHANNEL[:-1]
         real_path = os.path.dirname(os.path.realpath(__file__))
         if os.path.isdir(f'{real_path}/vid_list'): os.mkdir(f'{real_path}/vid_list')
-        file_name = f"{real_path}/vids_list/{str(yt_channel).split('/')[-1]}.json"
-        vids = ytvids.videos(yt_channel)
+        file_name = f"{real_path}/vids_list/{str(YT_CHANNEL).split('/')[-1]}.json"
+        vids = ytvids.videos(YT_CHANNEL)
         if not os.path.isfile(file_name):
-            print("New Channel")
-            print("listing all the past videos")
             with open(file_name, 'w', encoding="utf-8") as vid_list_file:
                 vid_list_file.write(json.dumps(vids))
-        upcoming = ytvids.upcoming(yt_channel)
-        livestreams = ytvids.livestream(yt_channel)
+        upcoming = ytvids.upcoming(YT_CHANNEL)
+        livestreams = ytvids.livestream(YT_CHANNEL)
         comp_vids = {}
         if vids: comp_vids.update(vids)
         if livestreams: comp_vids.update(livestreams)
         if upcoming: comp_vids.update(upcoming)
-        discord_channel = client.get_channel(811886667647418368)
+        discord_channel = client.get_channel(DS_CHANNEL)
         for key, val in comp_vids.items():
             check_data = await _is_data_exist(key, val, file_name)
             if check_data:
@@ -63,20 +65,7 @@ async def on_ready():
     print('Bot is Ready')
     client.loop.create_task(_get_vids())
 
-prefix = '-'
+# client.run(TOKEN)
 
-@client.event
-async def on_message(message):
-    if message.author == client.user or not message.content.startswith(prefix):
-        return
-
-    arg_commands = message.content[1:].split()
-    cases = {'ping': commands.ping}
-
-    for command in arg_commands:
-        if cases.get(command) is not None:
-            execute = cases.get(command) 
-            await execute(client.get_channel(811886667647418368))
-
-with open(".env", "r") as token:
-    client.run(f'{token.read()}')
+# Using .env technique
+client.run(os.getenv("TOKEN"))
