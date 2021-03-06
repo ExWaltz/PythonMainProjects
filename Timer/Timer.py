@@ -22,3 +22,13 @@ def Timer(h, m, s):
                 break
             yield iTime     # Return Time left
     return True     # To indicate that the timer is done
+
+if __name__ == '__main__':
+    hours = input("Hours:")
+    mins = input("Minutes:")
+    secs = input("Seconds:")
+    if hours == '': hours = 0
+    if mins == '': mins = 0
+    if secs == '': secs = 0
+    for h, m, s in Timer(hours, mins, secs):
+        print(f"{h}:{m}:{s}")

@@ -122,6 +122,8 @@ class App():
 
         quizzes = QuizBook.getRecent()
         quiz_book = []
+        if quizzes == None:
+            quizzes = QuizBook.getRecent()
         for quiz in quizzes:
             quiz_book_name = Path(quiz).name
             # save recent Quiz Book in quiz_book
@@ -657,6 +659,8 @@ class App():
             self.add_quiz_frame.destroy()
         if "about_frame" in self.__dict__:
             self.about_frame.destroy()
+        if "new_quiz_frame" in self.__dict__:
+            self.new_quiz_frame.destroy()
         self.master.update_idletasks()
 
     def resize(self, event):

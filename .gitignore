@@ -2,5 +2,6 @@
 *.json
 *.todo
 *.log
+.env
 test.py
 __pycache__
