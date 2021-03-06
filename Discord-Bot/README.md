@@ -10,17 +10,17 @@ DO NOT SHARE THE `config` FILE WITH ANYONE
 The most dangerous part of this `config` file is the `token`.
 If someone managed to get the token they would be able to take over the bot
 and potentially cause damage to your server.
-For other secure ways please go to [Tips and Tricks](Tips and Tricks)
+For other secure ways please go to [Tips and Tricks](#Tips-and-Tricks)
 
 I WILL NOT BE RESPONSIBLE FOR YOUR CARELESSNESS
 
 PLEASE REGENERATE THE TOKEN IF YOU SHARED THE CONFIG FILE
-!(Regenerate Token)[https://i.imgur.com/esXmrEr.png]
+![Regenerate Token](https://i.imgur.com/esXmrEr.png)
 
 
 ## token 
 The `token` variable will be the Token given when making a discord bot at [Discord Developer Portal](https://discord.com/developers/applications)
-!(A picture of copying the TOKEN from the discord bot)[https://i.imgur.com/lsV4c9J.png]
+![A picture of copying the TOKEN from the discord bot](https://i.imgur.com/lsV4c9J.png)
 
 ## youtubeChannel
 The `youtubeChannel` variable will be the Youtube channel link
@@ -46,9 +46,9 @@ The `youtubeChannel` variable will be the Youtube channel link
 ## discordChannelID
 The `discordChannelID` variable will be the discord channel ID.
 You can take the discord channel ID by turning ON the developer settings on Discord
-!(Discord Settings > Appearance > Developer Mode)[https://i.imgur.com/eFfNC47.png]
+![Discord Settings > Appearance > Developer Mode](https://i.imgur.com/eFfNC47.png)
 After this `Right Click` a channel and `Click` the `Copy ID`
-!(Hover over Discord Channel > Right Click > Click "Copy ID")[https://i.imgur.com/fOY8keT.png]
+![Hover over Discord Channel > Right Click > Click "Copy ID"](https://i.imgur.com/fOY8keT.png)
 
 # Tips and Tricks
 Depending on the hosting service; you can create a `.env` file to store your discord bot token.
@@ -59,4 +59,4 @@ Insert the `token` variable on to the `<TOKEN>` part
 
 The `.env` will not be visible to some hosting website, hiding your token from other people
 If you follow this tip, then uncomment the last in the `pingbot.py` file and comment the `client.run(TOKEN)` line
-!(Change the last line and comment the 4th to the last line)[https://i.imgur.com/VBsERF4.png]
+![Change the last line and comment the 4th to the last line](https://i.imgur.com/VBsERF4.png)
