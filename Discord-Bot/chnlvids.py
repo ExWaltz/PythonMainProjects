@@ -29,38 +29,45 @@ def upcoming(search_val):
     url = f"{search_val}/videos?view=2&live_view=502"
     return _main(url, "UPCOMING")
 
-def _get_views(vid_link):
-    response = requests.get(vid_link).text
-    soup = BeautifulSoup(response, 'lxml')
-    script_list = soup.find_all('script')
+def _get_chnl_vid(parent_jsn):
+    # Get Videos
+    channel_vid = parent_jsn.get('videoId')
+    channel_vid_thumb = f"https://i.ytimg.com/vi/{channel_vid}/maxresdefault.jpg" 
+    channel_vid = f"https://www.youtube.com/watch?v={channel_vid}"
+    channel_vid_title = parent_jsn.get('title').get('runs')[0].get('text')
+    channel_vid_type = parent_jsn.get('thumbnailOverlays')[0].get('thumbnailOverlayTimeStatusRenderer').get('style')
 
-    if str(vid_link).endswith('/'): vid_link = vid_link[:-1]
-    vid_id = str(vid_link).split('/')[-1]
+    # Check if Live Stream
+    if parent_jsn.get('publishedTimeText') is None:
+        # Get Live Stream Info
+        try:
+            if channel_vid_type == 'LIVE':
+                channel_vid_date = parent_jsn.get('thumbnailOverlays')[0].get('thumbnailOverlayTimeStatusRenderer').get('style')
+                channel_vid_views = parent_jsn.get('viewCountText').get('runs')[0].get('text')
+                channel_vid_length = parent_jsn.get('viewCountText').get('runs')[1].get('text')
 
-    for sc in script_list:
-        if str(sc).find("responseContext") != -1:
-            real_script = str(sc)   # Find the correct script that contains video informations
-            break
+            elif parent_jsn.get('upcomingEventData') is not None:
+                channel_vid_date = parent_jsn.get('upcomingEventData').get('startTime')
+                channel_vid_date = datetime.fromtimestamp(int(channel_vid_date))
+                jpn_time = pytz.timezone('Japan')
+                channel_vid_date = channel_vid_date.astimezone(jpn_time)
+                channel_vid_date = channel_vid_date.strftime('%Y %b %d, %H:%M JST')
+                channel_vid_views = parent_jsn.get('shortViewCountText').get('runs')[0].get('text')
+                channel_vid_length = parent_jsn.get('shortViewCountText').get('runs')[1].get('text')
 
-    real_script = real_script[69:-10]   # Remove uncessary text and convert to json ready text
-    with open("test.log", "w", encoding="utf-8") as debug_sc:
-        debug_sc.write(str(real_script))
-    jsn = json.loads(real_script)
+        except Exception:
+            # Youtube upload music videos is confusing
+            channel_vid_date = "Unspecified"
+            channel_vid_views = parent_jsn.get('viewCountText').get('simpleText')
+            channel_vid_length = parent_jsn.get('lengthText').get('simpleText')
 
-    vid_title = jsn.get('videoDetails').get('title')
-    vid_date = jsn.get('microformat').get('playerMicroformatRenderer').get('publishDate')
-    vid_views = jsn.get('videoDetails').get('viewCount')
-    vid_length = jsn.get('videoDetails').get('lengthSeconds')
-    vid_thumb = jsn.get('videoDetails').get('thumbnail').get('thumbnails')[-1].get('url')
-    vid_type = "DEFAULT"
-    vid_owner = jsn.get('videoDetails').get('author')
+    else:
+        # Get Video Info
+        channel_vid_date = parent_jsn.get('publishedTimeText').get('simpleText')
+        channel_vid_views = parent_jsn.get('viewCountText').get('simpleText')
+        channel_vid_length = parent_jsn.get('thumbnailOverlays')[0].get('thumbnailOverlayTimeStatusRenderer').get('text').get('simpleText')
 
-    if jsn.get('videoDetails').get('isLive'):
-        vid_type = "LIVE"
-    elif jsn.get('videoDetails').get('isUpcoming'):
-        vid_type = "UPCOMING"
-
-    return {vid_link: [vid_title, vid_date, vid_views, vid_length, vid_thumb, vid_type, vid_owner]}
+    return {channel_vid: [channel_vid_title, channel_vid_date, channel_vid_views, channel_vid_length, channel_vid_thumb, channel_vid_type]}
 
 
 def _main(url, method="DEFAULT"):
@@ -90,7 +97,7 @@ def _main(url, method="DEFAULT"):
     # 'searchRaw.log'. You can use an online tool to
     # check if the string is ready to be parsed to json format
     #
-    # open_file = open('searchRaw.log', 'w', encoding='utf-8')
+    # open_file = open(f'searchRaw-{method}.log', 'w', encoding='utf-8')
     # open_file.write(str(real_script))
     # open_file.close()
 
@@ -102,17 +109,17 @@ def _main(url, method="DEFAULT"):
     # We use get() method, because it returns None type instead of an error
     #
     jsn_list = jsn.get('contents').get('twoColumnBrowseResultsRenderer').get('tabs')[1].get('tabRenderer').get('content').get('sectionListRenderer').get('contents')[0].get('itemSectionRenderer').get('contents')[0].get("gridRenderer").get("items")
+    chnl_name = jsn.get('header').get('c4TabbedHeaderRenderer').get('title')
     chnl_avatar = jsn.get('header').get('c4TabbedHeaderRenderer').get('avatar').get('thumbnails')[-1].get('url')
 
     results = {}
 
     for search_result in jsn_list:
         if search_result.get("gridVideoRenderer"):
-            vid_link = search_result.get("gridVideoRenderer").get('videoId')
-            vid_link = f"https://www.youtube.com/watch?v={vid_link}"
-            chnl_vid = _get_views(vid_link)
+            chnl_vid = _get_chnl_vid(search_result.get("gridVideoRenderer"))
             chnl_val = next(iter(chnl_vid.values()))
             chnl_key = next(iter(chnl_vid.keys()))
+            chnl_val.append(chnl_name)
             chnl_val.append(chnl_avatar)
             chnl_vid[chnl_key] = chnl_val
             if chnl_val[5] == method:

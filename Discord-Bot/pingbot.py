@@ -48,13 +48,13 @@ async def _embed_message(vid_link, vid_title, upload_date, views, duration, thum
 
     if status == "UPCOMING": 
         embed_color = discord.Colour.purple()
-        default_description = f"{chnl_name} is going live at {upload_date} JST on Youtube!"
+        default_description = f"{chnl_name} is going live at {upload_date} on Youtube!"
 
     elif status == "DEFAULT":
         embed_color = discord.Colour.blue()
         view_text = "VIEWS"
         view_val = f"{views}"
-        default_description = f"{chnl_name} uploaded a new video at {upload_date} JST on Youtube!"
+        default_description = f"{chnl_name} uploaded a new video at {upload_date} on Youtube!"
         embed.add_field(name = "Duration", value = duration)
 
     embed.color = embed_color
