@@ -30,5 +30,12 @@ if __name__ == '__main__':
     if hours == '': hours = 0
     if mins == '': mins = 0
     if secs == '': secs = 0
+    past_h = 0
+    past_m = 0
+    past_s = 0
     for h, m, s in Timer(hours, mins, secs):
-        print(f"{h}:{m}:{s}")
+        if past_h != h or past_m != m or past_s !=s:
+            print(f"{h}:{m}:{s}")
+        past_h = h
+        past_m = m
+        past_s = s
